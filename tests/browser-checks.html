@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>HTML LAB browser checks</title>
+    <style>
+      body {
+        background: #111722;
+        color: #c6d7c7;
+        font: 14px monospace;
+        padding: 30px;
+      }
+      li {
+        margin: 12px 0;
+      }
+      .fail {
+        color: salmon;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>HTML LAB browser checks</h1>
+    <p id="status">Running…</p>
+    <ol id="results"></ol>
+    <script type="module" src="./browser-checks.mjs"></script>
+  </body>
+</html>
