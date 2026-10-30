@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import {
   ArrowUpRight,
   ArrowRight,
@@ -73,6 +73,7 @@ import {
   SemanticBuilder,
 } from "./components/Experiments";
 
+const Academy = lazy(() => import("./components/Academy"));
 type Lesson = (typeof lessons)[number];
 type Progress = {
   completed: string[];
@@ -140,6 +141,14 @@ export default function App() {
     [searchOpen, setSearchOpen] = useState(false);
   const main = useRef<HTMLElement>(null);
   const [page, id] = route.split("/");
+  const addedLabels: Record<string, string> = {
+    zero: "Start from Zero",
+    tools: "Development toolkit",
+    workspace: "Project Workspace",
+    academy: "Development toolkit",
+    industry: "Industry Project Lab",
+    bugs: "Bug Hunter",
+  };
   const lesson = lessons.find((l) => l.id === id) || lessons[0];
   useEffect(() => {
     const change = () => {
@@ -160,7 +169,7 @@ export default function App() {
     }
   }, [progress]);
   useEffect(() => {
-    document.title = `${page === "lesson" ? lesson.title : "Learn HTML by Building"} · HTML LAB`;
+    document.title = `${page === "lesson" ? lesson.title : addedLabels[page] || "Learn HTML by Building"} · HTML LAB`;
   }, [page, id]);
   useEffect(() => {
     const listener = (e: KeyboardEvent) => {
@@ -243,6 +252,12 @@ export default function App() {
   const next =
     lessons.find((l) => !progress.completed.includes(l.id)) || lessons[0];
   function go(target: string) {
+    if (
+      !window.dispatchEvent(
+        new Event("html-lab-before-navigate", { cancelable: true }),
+      )
+    )
+      return;
     if (location.hash === `#${target}`) {
       setRoute(target);
       setMenu(false);
@@ -255,6 +270,9 @@ export default function App() {
   }
   const navItems = [
     ["home", "Learning home"],
+    ["zero", "Start from Zero"],
+    ["tools", "Development toolkit"],
+    ["workspace", "Project Workspace"],
     ["lab", "HTML Live Lab"],
     ["history", "HTML Time Machine"],
     ["elements", "Element Explorer"],
@@ -404,12 +422,15 @@ export default function App() {
             <b>
               {page === "lesson"
                 ? `Chapter ${lesson.chapter}`
-                : navItems.find((x) => x[0] === page)?.[1] || "Learning home"}
+                : addedLabels[page] ||
+                  navItems.find((x) => x[0] === page)?.[1] ||
+                  "Learning home"}
             </b>
           </div>
           <div className="topbar-right">
             <button
               className="search-button"
+              aria-label="Find a lesson"
               onClick={() => setSearchOpen(true)}
             >
               <Search size={15} />
@@ -454,7 +475,29 @@ export default function App() {
               </button>
             </div>
           )}
-          {page === "home" ? (
+          {[
+            "zero",
+            "tools",
+            "workspace",
+            "academy",
+            "industry",
+            "bugs",
+          ].includes(page) ? (
+            <Suspense
+              fallback={<p role="status">Opening your learning tools…</p>}
+            >
+              <Academy
+                key={page + "/" + (id || "")}
+                page={page}
+                id={id}
+                go={go}
+                done={done}
+                progress={progress}
+                teacher={teacher}
+                next={next.id}
+              />
+            </Suspense>
+          ) : page === "home" ? (
             <>
               <div className="home-intro">
                 <div className="eyebrow">
@@ -548,6 +591,25 @@ export default function App() {
                     <b className={i === 6 ? "accent" : ""}>{t}</b>
                   </span>
                 ))}
+              </div>
+              <div className="zero-invite">
+                <div>
+                  <span className="eyebrow">
+                    NEW OPTIONAL PATH · YOUR EXISTING PROGRESS IS SAFE
+                  </span>
+                  <h2>Never made a computer file before?</h2>
+                  <p>
+                    Start with a virtual computer, then build, style, and export
+                    your first multi-page website.
+                  </p>
+                </div>
+                <button className="button primary" onClick={() => go("zero")}>
+                  Start from Zero
+                  <ArrowRight size={16} />
+                </button>
+                <button className="button subtle" onClick={() => go("tools")}>
+                  Explore the toolkit
+                </button>
               </div>
               <section className="start-section">
                 <div className="section-top">
@@ -665,7 +727,13 @@ export default function App() {
               score={score}
               go={go}
               saveDraft={saveDraft}
-              initialTab={route.endsWith("/quiz") ? "quiz" : "learn"}
+              initialTab={
+                ["quiz", "experiment", "practice"].includes(
+                  route.split("/").at(-1) || "",
+                )
+                  ? route.split("/").at(-1)!
+                  : "learn"
+              }
             />
           ) : page === "lab" ? (
             <>

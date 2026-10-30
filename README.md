@@ -1,5 +1,11 @@
 # HTML LAB — Learn HTML by Building
 
+## V2: start from zero, then build a complete site
+
+The original course and progress records are preserved. New optional entry points are **Start from Zero**, **Development toolkit**, and **Project Workspace**. V2 adds thirteen guides, a safe multi-file HTML/CSS workspace with IndexedDB and ZIPs, seven additional industry projects, seven debugging challenges, CSS/Git/deployment workshops, a beginner glossary, classroom materials, and opt-in offline lesson storage.
+
+See [V2 implementation and limits](V2-IMPLEMENTATION.md) and [V2 verification](VERIFICATION-V2.md). Learner projects stay on the device; publication uses a real provider workflow outside the app. The existing single-file lab remains available.
+
 A separate React + TypeScript + Vite educational application. The existing JS LAB source and deployment are unchanged. This directory can be copied into its own repository and run independently.
 
 ## Run
@@ -67,7 +73,7 @@ Documents are limited to 80,000 characters; the tree view is limited to 350 elem
 
 Downloaded HTML is learner-authored source. It does not bundle assets, create multiple files, store accounts, send applications, process payments, or supply a backend. Put linked files beside it or change URLs appropriately. Nested iframe examples are shown as source because nested documents are blocked in the live lab. Homepage CSS/JavaScript switches and the responsive-image slider are explicit teaching simulations, not execution of learner scripts.
 
-Session-planner notes are temporary while that view remains open. Persistent classroom rosters, authentication, grade export, and a multi-file editor are outside this frontend application.
+Session-planner notes are temporary while that view remains open. Centralized classroom rosters, authentication, and shared grade tracking are outside this frontend application. V2 adds a separate multi-file workspace and individual device-local result/rubric exports; it does not change the original single-document lab.
 
 ## GitHub Pages
 

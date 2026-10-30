@@ -1,0 +1,635 @@
+const unit = (title, why, what, analogy, practice, mistake) => ({
+  title,
+  why,
+  what,
+  analogy,
+  practice,
+  mistake,
+});
+export const guides = [
+  {
+    id: "computer",
+    title: "Computer & file fundamentals",
+    stage: 0,
+    description:
+      "Find your footing: applications, folders, filenames, and the difference between editing and viewing.",
+    units: [
+      unit(
+        "A computer runs software",
+        "You need to know which tool changes a file and which tool displays it.",
+        "Hardware is the physical machine: processor, keyboard, screen, and storage. Software is the set of instructions it runs. An operating system such as Windows, macOS, or Linux manages files, devices, and applications. A browser and an editor are different applications. Install applications from their official source; a website claiming you need an unknown download is not a reason to install it.",
+        "A workshop has physical tools and operating instructions. The analogy stops at meaning: a computer follows precise instructions, not a craftsperson’s judgment.",
+        "Name the operating system, browser, and file manager on a computer you can use. You do not need to install anything to finish the simulator.",
+        "A browser is not the Internet itself, and a search engine is a website used through a browser.",
+      ),
+      unit(
+        "Files are saved documents",
+        "Unsaved text can disappear when an application closes.",
+        "A file has a name, contents, and a location. A folder groups files and other folders. Saving writes the current contents to storage; opening reads them into an application. Copy creates another copy; move changes location; rename changes a name. Downloads usually go to a Downloads folder, but browser settings can change the destination. A ZIP is an archive containing files; extract it before treating it as a project folder.",
+        "A folder is a cupboard; a file is a labeled document inside it. Copies can diverge when edited.",
+        "In the virtual computer, create MyWebsite, create index.html, write a heading, click Save, then choose it in Browser page.",
+        "Renaming a file from .txt to .png does not convert its contents into an image.",
+      ),
+      unit(
+        "Read the whole filename",
+        "Hidden extensions make index.html.txt a common first mistake.",
+        "An extension is the final suffix: .html for markup, .css for styles, .js for scripts, .png/.jpg for raster images, and .svg for vector graphics. The extension helps applications choose how to handle a file; its contents still need to match. A path tells you where a file is. Opening local HTML in a browser renders a local document; it does not upload it to a server.",
+        "A label helps you identify a container, but writing “paint” on a water bottle does not change what is inside.",
+        "Create index.html.txt in the simulator. Notice it is not offered as an HTML browser page. Rename it and compare.",
+        "Do not use word-processing software to save an HTML document with rich-text formatting.",
+      ),
+    ],
+    links: [
+      [
+        "VS Code setup",
+        "https://code.visualstudio.com/docs/setup/setup-overview",
+      ],
+    ],
+  },
+  {
+    id: "editor",
+    title: "Your editor school",
+    stage: 0,
+    description:
+      "Learn the small set of editing skills you need, then repeat them in the real VS Code.",
+    units: [
+      unit(
+        "Open the folder, then create a file",
+        "A project folder keeps pages, styles, and images together so their paths make sense.",
+        "Install VS Code from code.visualstudio.com using the instructions for your operating system. Open the application and choose File → Open Folder. Choose your website folder. In the Explorer panel create index.html, type a document, and save it. Use the same folder in your file manager to check the file really exists. This simulator models a subset of these behaviors; it is not VS Code itself.",
+        "An editor is a workbench. Opening the whole cupboard makes the related tools visible.",
+        "Create index.html and css/style.css in the workspace. Switch tabs, rename the CSS file, and explain which link must change.",
+        "Opening one file from Downloads can hide the fact that its images are in another folder.",
+      ),
+      unit(
+        "Write, save, and inspect",
+        "Highlighting and indentation make structure easier to notice; they do not prove correctness.",
+        "VS Code offers tag suggestions as you type. Tab usually accepts a suggestion or indents; Enter starts a new line. Save with Ctrl+S on Windows/Linux or Cmd+S on macOS. Undo is Ctrl/Cmd+Z; copy and paste are Ctrl/Cmd+C and V. Find is Ctrl/Cmd+F. Format Document is Shift+Alt+F on Windows, Shift+Option+F on macOS, and often Ctrl+Shift+I on Linux; bindings can be customized. Check Keyboard Shortcuts if yours differs.",
+        "Indentation is the neat arrangement of tools; the actual tags still determine the structure.",
+        "Use the source editor to indent a child paragraph, save, find a word, and preview. Try the shortcut practice below.",
+        "An editor warning is a clue to investigate, not proof the browser cannot render the file.",
+      ),
+      unit(
+        "The terminal and optional extensions",
+        "Beginners should recognize a terminal without feeling they must use it for every task.",
+        "A terminal accepts text commands. In VS Code open View → Terminal; its current folder matters. A basic static HTML/CSS site does not require npm, a build system, or a paid extension. Start with built-in HTML/CSS support. Review the publisher and permissions before optional extensions. This workspace does not run shell commands or install software.",
+        "A terminal is another way to ask the computer to perform a task, like a precise written instruction instead of a button.",
+        "In real VS Code, locate the terminal and its displayed directory. Close it without running a command. Build your first page with the editor and browser.",
+        "Do not paste unknown commands or install many extensions just because a tutorial lists them.",
+      ),
+    ],
+    links: [
+      [
+        "Official editor tutorial",
+        "https://code.visualstudio.com/docs/getstarted/tips-and-tricks",
+      ],
+      [
+        "Keyboard shortcuts",
+        "https://code.visualstudio.com/docs/configure/keybindings",
+      ],
+    ],
+  },
+  {
+    id: "web",
+    title: "Follow a website request",
+    stage: 1,
+    description:
+      "Explore outcomes and diagnose where the problem occurs; the existing Chapter 1 supplies the underlying HTML introduction.",
+    units: [
+      unit(
+        "Read an address in parts",
+        "A wrong path and a connection failure are different problems.",
+        "A URL includes a scheme such as https, a host such as learn.example.com, a path such as /notes.html, and optional query and fragment parts. learn is a subdomain. DNS helps find an IP address for the host. HTTPS uses encryption for transport; it does not guarantee that a website is honest. A browser interprets resources; a search engine helps find URLs.",
+        "The domain is a memorable address. DNS is like finding directions, not the building’s contents.",
+        "Use the Network Journey to try a correct address, a typo, a missing page, and a connection failure. Say which component has enough information to produce each result.",
+        "A 404 is an HTTP response from a reachable server, not the same as having no connection.",
+      ),
+      unit(
+        "Requests, responses, and rendering",
+        "One page can depend on several resources, and one broken resource need not break everything.",
+        "200 means success. 301/302 signal redirects. 403 means access is forbidden. 404 means the resource was not found. 500 signals a server-side error. A browser parses HTML, requests styles/images/scripts as needed, applies CSS, builds layout, and paints pixels. A cached resource may be reused according to caching rules. A static site serves prepared files; a dynamic service can generate responses or process data. Frontend is the browser-facing interface; backend work happens on a server or service.",
+        "A delivery can succeed for the main document while a separate package—the image—goes missing.",
+        "Select broken image in the simulator. Explain why the document can be 200 while the image request is 404.",
+        "Reloading cannot repair a path to a file that was never uploaded.",
+      ),
+    ],
+    links: [
+      [
+        "HTTP overview",
+        "https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview",
+      ],
+    ],
+  },
+  {
+    id: "css",
+    title: "From structure to style",
+    stage: 5,
+    description:
+      "Enough CSS to make a beginner website presentable, adaptable, and readable.",
+    units: [
+      unit(
+        "Choose a styling location",
+        "Keeping meaning separate from appearance makes a multi-page site easier to update.",
+        'CSS consists of selectors and declaration blocks: .card { padding: 1rem; }. p selects a tag, .card a class, and #intro an id. Inline style affects one element, a style element provides internal CSS, and link rel="stylesheet" href="css/style.css" connects an external file. A shared external file suits multiple pages. Later rules, specificity, inheritance, and importance affect which value wins; inspect the applied styles rather than adding !important repeatedly.',
+        "HTML is the building’s structure; CSS is its presentation and layout. CSS does not change the meaning of a heading.",
+        "Open a three-page workspace, put a body rule in css/style.css, and visit each page. Change one class rule and observe which elements it matches.",
+        'A .card selector does not match id="card"; it matches class="card".',
+      ),
+      unit(
+        "Make space deliberately",
+        "Many layout problems come from confusing the content box with the whole occupied space.",
+        "The box model includes content, padding, border, and margin. box-sizing: border-box includes padding and border within the declared width. Colors, font-family, font-size, line-height, backgrounds, and borders affect presentation. Prefer relative units such as rem and percentages where appropriate. Avoid fixed widths that exceed a small screen. display controls layout behavior; setting display:none hides content rather than removing it from source.",
+        "Padding is packaging inside a border; margin is space around the package.",
+        "Adjust the Box Model Visualizer, then reproduce the chosen padding and border in a profile card. Test long text.",
+        "A 320px content width plus padding and border can be wider than a 320px screen under content-box sizing.",
+      ),
+      unit(
+        "Build layouts that adapt",
+        "Visitors do not all have the same screen size or input method.",
+        "Flexbox lays out a row or column with direction, alignment, wrapping, and gap controls. Grid lays out rows and columns; repeat(auto-fit,minmax(...)) can create flexible cards. Begin with a single-column mobile layout, then add a min-width media query when there is enough space for columns. Use max-width on content and max-width:100%;height:auto on images. Include :focus-visible as well as :hover states. Do not change meaningful source order merely to force a visual effect.",
+        "Responsive design is furniture that fits the room, not a shrunken photograph of a large room.",
+        "Style a registration form, make a wrapping navigation row, and build a two-column card area that becomes one column at 320px.",
+        "Hover-only instructions do not help a touch or keyboard user.",
+      ),
+    ],
+    links: [
+      [
+        "CSS basics",
+        "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Styling_basics",
+      ],
+    ],
+  },
+  {
+    id: "debug",
+    title: "Bug Hunter",
+    stage: 6,
+    description:
+      "Investigate evidence, form a hypothesis, and repair one thing at a time.",
+    units: [
+      unit(
+        "Use a repeatable investigation",
+        "Random edits can hide the real cause or create a second bug.",
+        "Observe the symptom. State the expected behavior. Reproduce it. Inspect the relevant file or request. Form one hypothesis. Change one thing. Test again. Confirm the fix and check that a working feature still works. Bugs include wrong extensions, missing end tags, invalid nesting, case mismatches, missing CSS, wrong selectors, and incorrect form labels. Browser recovery can make bad source look plausible.",
+        "A mechanic diagnoses a sound under specific conditions instead of replacing every part at once.",
+        "Pick a Bug Hunter challenge. Write your hypothesis before editing; use staged hints only when the evidence stops helping.",
+        "Copying the reference solution can fix the page without teaching you which cause you identified.",
+      ),
+      unit(
+        "Check the whole path to the result",
+        "A correct img tag cannot load a file that does not exist at its resolved URL.",
+        "Check exact spelling and case, the current document folder, the extension, and whether the asset was exported. For CSS inspect the stylesheet link and the selector. For a form compare label for with input id; name has a different job. For deployment check the root index.html, publication folder, relative paths, and whether a stale resource is cached. A very wide fixed element can cause overflow even when the HTML is valid.",
+        "Trace a chain: document → reference → resolved path → actual file → browser interpretation.",
+        "Use project checks to locate a missing resource, repair it, then revisit another page to catch unintended effects.",
+        "An automated “passed” result does not assess all visual or content quality.",
+      ),
+    ],
+    links: [
+      [
+        "Debugging HTML",
+        "https://developer.mozilla.org/en-US/docs/Learn_web_development/Core/Structuring_content/Debugging_HTML",
+      ],
+    ],
+  },
+  {
+    id: "devtools",
+    title: "Browser detective tools",
+    stage: 6,
+    description:
+      "Connect the built-in DOM explorer with real browser inspection.",
+    units: [
+      unit(
+        "Inspect the live document",
+        "Source and the live DOM can differ after parsing or scripts.",
+        "In Chrome or Edge use the menu → More tools → Developer tools, or right-click → Inspect. Firefox provides its browser tools through its menu and Inspect. Keyboard shortcuts vary; common desktop choices include F12 or Ctrl+Shift+I, and Cmd+Option+I on macOS. Elements/Inspector shows the DOM. Styles/Rules shows matching CSS. Computed shows resolved values. Edits here usually change your local view only; reload to see the saved site again.",
+        "Developer tools are a diagnostic window into the running machine, not a remote editor for the server.",
+        "Use the simulated inspector below, then inspect an h1 on your own exported page and change its color. Reload and explain what survived.",
+        "Editing a live page does not update your source project or publicly hosted files.",
+      ),
+      unit(
+        "Network, console, and device views",
+        "The browser can tell you which request failed instead of making you guess.",
+        "The Network panel lists resource URLs, status, type, size, and timing. Reload while it is open to observe requests; caching can affect what you see. A missing image may be a 404. The Console shows messages and errors; not every warning is the cause of your problem. Device/responsive mode changes a simulated viewport, not a guarantee of a physical device’s behavior. Do not paste unknown code into the console.",
+        "A network waterfall is a delivery schedule, showing dependencies and time rather than just a list of file names.",
+        "Open Network for your exported site, identify the HTML and CSS requests, then intentionally break an image path and find the failed request.",
+        "Do not disable security warnings to make a tutorial example work.",
+      ),
+    ],
+    links: [
+      [
+        "Chrome DevTools",
+        "https://developer.chrome.com/docs/devtools/overview",
+      ],
+      [
+        "Firefox browser tools",
+        "https://firefox-source-docs.mozilla.org/devtools-user/",
+      ],
+    ],
+  },
+  {
+    id: "workflow",
+    title: "From idea to live website",
+    stage: 3,
+    description:
+      "Plan, structure, style, test, publish, and maintain one coherent project.",
+    units: [
+      unit(
+        "Begin with a person and a task",
+        "A page full of tags is not necessarily a useful website.",
+        "Identify an audience, the problem they have, the content they need, and the next action. Sketch a sitemap with pages and links. Write heading outlines and a content checklist before deciding colors. A wireframe shows approximate content order and layout; it is a proposal, not validated customer research. Use fictional sample identities and licensed assets.",
+        "A civil engineer starts with a purpose and constraints before drawing decorative finishes.",
+        "Complete the Planning Canvas, export it, and use it as the brief for a three-page project.",
+        "Automatically generated suggestions are starting points, not proof that real users need those pages.",
+      ),
+      unit(
+        "Deliver and maintain in small steps",
+        "A small working section is easier to test than a large unfinished page.",
+        "Build semantic HTML, add external CSS, then test navigation, forms, images, keyboard use, small screens, headings, and basic load sizes. Export the actual files. Publish through a chosen host, visit the real URL, and test again. Later updates require editing saved source, committing or uploading changes, and waiting for a successful publication. Keep a review checklist and a copy of the previous working version.",
+        "Build a safe span, test it, then extend the bridge.",
+        "Make one improvement to an exported site, record the reason in a change note, and follow the update steps in Deployment Academy.",
+        "A static contact form is not a message-delivery service.",
+      ),
+    ],
+    links: [],
+  },
+  {
+    id: "git",
+    title: "Git & GitHub, from zero",
+    stage: 7,
+    description: "Understand versions before learning commands.",
+    units: [
+      unit(
+        "Name the places in the workflow",
+        "Git and GitHub solve related but different problems.",
+        "Git records versions in a repository on your computer. A commit is a recorded snapshot with a message. Staging selects changes for the next commit. GitHub hosts remote repositories and collaboration tools. A push transfers local commits to a remote; a pull fetches and integrates remote changes; a clone creates a local copy of a remote repository. A branch is a separate line of work. README explains the project; .gitignore excludes generated or private files before tracking. Ignoring a file already committed does not erase its history.",
+        "A commit is a labeled checkpoint, not merely pressing Save in an editor.",
+        "Use the Git Visualizer: edit, stage, commit, push the simulated history, then restore an older local version.",
+        "Never commit passwords, private keys, access tokens, or personal student information.",
+      ),
+      unit(
+        "Use the browser-first workflow",
+        "You can publish your first simple static site without mastering a terminal.",
+        "Create your own GitHub account on GitHub, following its current terms and account guidance. Create a repository for your learning site. For free-account Pages use a public repository. Extract your exported ZIP; upload the website files, not a ZIP containing them. Ensure index.html is at the publishing root. Add a README, choose a meaningful commit message, and inspect the history after changing a file. Later, install Git from its official source, clone the repository, edit, use git status, git add, git commit, and git push. Resolve collaboration changes carefully instead of force-pushing.",
+        "Your local folder is your workbench; the remote is a shared record. Uploading and committing are explicit actions.",
+        "Write a README describing the audience, files, how to open the site, and the fact that any forms are mockups.",
+        "HTML LAB never asks for your GitHub password or token. Simulated push does not create a real repository.",
+      ),
+    ],
+    links: [
+      [
+        "GitHub Hello World",
+        "https://docs.github.com/en/get-started/start-your-journey/hello-world",
+      ],
+      [
+        "Upload local files",
+        "https://docs.github.com/en/repositories/working-with-files/managing-files/adding-a-file-to-a-repository",
+      ],
+      ["Git documentation", "https://git-scm.com/doc"],
+    ],
+  },
+  {
+    id: "publish",
+    title: "Deployment Academy",
+    stage: 8,
+    description:
+      "Take the exported files to a real static host, then verify the real URL.",
+    units: [
+      unit(
+        "Know what a static host can do",
+        "Putting a form on a server does not make its processing logic exist.",
+        "Hosting makes files available over the Web. A domain is a memorable host name; DNS maps names toward the hosting infrastructure. HTTPS protects transport. Static hosting can serve HTML, CSS, scripts, and assets; secure authentication, private databases, and message processing need appropriate services. Provider account requirements, limits, and free or paid offerings change. Do not promise permanent free capacity or fixed pricing.",
+        "Hosting is a place that can supply the documents; a domain is a signpost pointing visitors there.",
+        "Export your project and inspect its extracted folder. Check index.html, CSS, and every local asset before selecting a provider.",
+        "A successful simulator is not evidence of real public deployment.",
+      ),
+      unit(
+        "Publish a simple GitHub Pages site",
+        "A predictable publishing folder avoids the most common first failure.",
+        "Use the browser-upload Git lesson to create a repository containing extracted website files. In Settings → Pages choose a publishing source. For plain HTML/CSS, Deploy from a branch can publish main and /(root) when the files are at that root. Save the source, inspect the Pages build/deployment status, then open the provided URL. For a project site, the address usually includes /repository-name/. Keep paths relative so a stylesheet or image does not accidentally resolve at the account root. This HTML LAB app itself uses an Actions workflow, which is a separate build-based approach.",
+        "A publish process copies the selected output to a public address; the folder you choose determines what visitors receive.",
+        "Follow the official guide linked below. Visit the real URL and another page, test an image, then enter your own completion evidence.",
+        "Uploading a parent folder with index.html buried one level too deep can leave the publishing root without an entry page.",
+      ),
+      unit(
+        "Update and investigate a deployment",
+        "A saved local edit is not automatically a published update.",
+        "Commit/push or upload the changed files, wait for the provider’s success status, and reload the actual URL. Check the publication directory, file case, relative asset paths, and any build base path before blaming caching. A private/incognito window or a hard reload can help diagnose stale resources after a successful deploy, but cannot repair missing files. Netlify can publish a local output folder through manual deploys; Cloudflare Pages offers Direct Upload of prebuilt files; Vercel supports project deployments and Git integration. Each requires its own current account setup and limits.",
+        "Test the delivered building, not only the blueprint on your desk.",
+        "Run the deployment simulator, then use the provider’s own success status and your actual URL to distinguish practice from publication.",
+        "Do not upload private data, credentials, or someone else’s copyrighted assets when publishing a learning site.",
+      ),
+    ],
+    links: [
+      [
+        "GitHub Pages official guide",
+        "https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site",
+      ],
+      [
+        "Netlify manual deploys",
+        "https://docs.netlify.com/deploy/create-deploys/",
+      ],
+      [
+        "Cloudflare Direct Upload",
+        "https://developers.cloudflare.com/pages/get-started/direct-upload/",
+      ],
+      ["Vercel deployments", "https://vercel.com/docs/deployments"],
+    ],
+  },
+  {
+    id: "design",
+    title: "Design for the reader",
+    stage: 5,
+    description:
+      "Judge clarity and usability with reasons, not personal taste alone.",
+    units: [
+      unit(
+        "Make the next action understandable",
+        "Visual polish is useful when it helps a visitor read, navigate, and act.",
+        "Use a clear heading hierarchy, comfortable text size and line-height, sufficient contrast, consistent spacing, alignment, and meaningful navigation labels. Whitespace separates ideas. A button should describe an action; a link describes a destination. Forms need persistent labels and errors that say what happened and how to fix it. Do not rely on color or hover alone. Plan a narrow layout first and let content determine useful breakpoints.",
+        "A readable engineering drawing prioritizes meaningful distinctions; decorative complexity can hide them.",
+        "Compare the two designs below. Identify a readability issue, a navigation issue, and a form-label issue, then repair one in the workspace.",
+        "A low-contrast fashionable palette can make otherwise useful content hard to read.",
+      ),
+    ],
+    links: [],
+  },
+  {
+    id: "access",
+    title: "Accessibility & SEO workshop",
+    stage: 6,
+    description:
+      "Repair actual documents and combine automated clues with human review.",
+    units: [
+      unit(
+        "Test a visitor task",
+        "A checklist can miss a confusing interaction even when all its boxes are checked.",
+        "Use Tab and Shift+Tab to follow focus, activate controls with a keyboard, inspect meaningful link text, review image alternatives, and read the heading outline. Check table headers and form-label associations. Screen readers expose document semantics through an accessibility interface; they are not simply an audio version of a screenshot. A contrast ratio is one specific test, not an accessibility certificate. Automated DOM checks cannot judge every meaning or interaction.",
+        "A checklist is a diagnostic tool. The task still needs a person trying to complete it.",
+        "Use the repair exercise and contrast calculator. Record which checks were automated and which you performed manually.",
+        "Do not claim complete WCAG, legal, or accessibility compliance from a green report.",
+      ),
+      unit(
+        "Help readers and crawlers understand the page",
+        "Useful page identity and internal navigation benefit people as well as discovery tools.",
+        "Write a specific title and honest meta description. Use descriptive headings and links. Ensure pages link to each other. A sitemap is a map of discoverable URLs, often represented in a sitemap.xml file for crawlers; it does not guarantee indexing. Name image files meaningfully without keyword stuffing. Reasonable image sizes and fewer unnecessary requests can improve load experience. Search ranking depends on more than HTML, and metadata does not guarantee a chosen snippet.",
+        "Good signs and a map make a building easier to explore; they do not force every visitor to come.",
+        "Repair a vague title, missing description, and unlinked page, then review the actual page content.",
+        "Do not put private information into metadata assuming visitors will never see it.",
+      ),
+    ],
+    links: [
+      [
+        "WAI evaluation checks",
+        "https://www.w3.org/WAI/test-evaluate/preliminary/",
+      ],
+      [
+        "Search fundamentals",
+        "https://developers.google.com/search/docs/fundamentals/seo-starter-guide",
+      ],
+    ],
+  },
+  {
+    id: "essentials",
+    title: "Performance, security & privacy",
+    stage: 6,
+    description: "Make sensible choices for a first public website.",
+    units: [
+      unit(
+        "Pay attention to bytes and requests",
+        "An unnecessarily large photo can dominate the loading time of a small page.",
+        "Choose dimensions appropriate for the display, compress images with a suitable tool, and consider responsive candidates. Lazy loading can help below-the-fold images; avoid blindly lazy-loading the main visible image. Every external font, embed, or script adds dependencies and possibly privacy considerations. A waterfall shows request timing and dependencies; a size simulator is only an estimate because networks, caching, latency, and processing vary.",
+        "Do not send a truckload of paper when a clear one-page drawing will do.",
+        "Compare image sizes and bandwidth below; record the assumptions and inspect the real Network panel on your own site.",
+        "Reducing width and height attributes alone does not reduce the downloaded image file size.",
+      ),
+      unit(
+        "Keep secrets out of public files",
+        "Anything delivered to the browser can be inspected by visitors.",
+        "A password written in HTML, CSS, JavaScript, or a public repository is not a protected secret. Real login requires appropriate server-side or authentication infrastructure. Client-side validation improves usability but is bypassable. HTTPS protects transport; POST alone does not encrypt information. Review third-party embeds, request only necessary data, and respect copyright and image licenses. Do not blindly paste unknown code or console commands. Use noopener for intentionally opened external tabs.",
+        "A public noticeboard is not a locked safe, even if the text is small or hidden.",
+        "Use the security detective to identify an exposed fictional secret and a misleading static login claim.",
+        "Never enter real passwords, tokens, or private student information into these exercises.",
+      ),
+    ],
+    links: [
+      ["Web security", "https://developer.mozilla.org/en-US/docs/Web/Security"],
+    ],
+  },
+  {
+    id: "javascript",
+    title: "Connect structure to behavior",
+    stage: 10,
+    description:
+      "A small, controlled bridge to JS LAB—not another full JavaScript course.",
+    units: [
+      unit(
+        "An event can change the live document",
+        "HTML supplies controls and content; programmable application logic needs another language.",
+        "JavaScript can select an element with querySelector, listen with addEventListener, and update textContent or hidden. The DOM is the parsed tree you already inspect in Chapter 10. A click event can increment a counter, toggle a panel, or update a feedback paragraph. Native validation and disclosure can already work without a custom script. This lab’s demonstrations run predefined application code only; they never execute your project scripts.",
+        "A switch can change a light’s state. The markup gives the control a place and a name; the programmed connection defines its response.",
+        "Try the controlled counter, disclosure, and feedback examples. Predict which DOM property changes, then continue in JS LAB.",
+        "Updating the live DOM does not automatically save a source file, write a database, or create a user account.",
+      ),
+    ],
+    links: [
+      ["Continue in JS LAB", "https://shadabur-rahaman.github.io/js-lab/"],
+    ],
+  },
+];
+export const glossary = [
+  [
+    "File",
+    "A saved document with contents, a name, and a location.",
+    "A labeled sheet in a cupboard.",
+    "index.html",
+    "computer",
+  ],
+  [
+    "Folder",
+    "A container that groups files and other folders.",
+    "A cupboard with shelves.",
+    "images/profile.png",
+    "computer",
+  ],
+  [
+    "Extension",
+    "The last filename suffix, used to help identify a file type.",
+    "A label, not a conversion machine.",
+    "index.html.txt is a text file name.",
+    "computer",
+  ],
+  [
+    "Editor",
+    "An application for changing text source files.",
+    "Your workbench.",
+    "Write <h1>Hello</h1> and save.",
+    "editor",
+  ],
+  [
+    "Source code",
+    "The written instructions or markup that a tool interprets.",
+    "A precise blueprint.",
+    "<p>A paragraph</p>",
+    "editor",
+  ],
+  [
+    "Browser",
+    "An application that retrieves, interprets, and displays web resources.",
+    "A blueprint interpreter, with defined rules.",
+    "Open index.html to render it.",
+    "web",
+  ],
+  [
+    "Server",
+    "A system that answers requests and supplies resources or processing.",
+    "A place that provides documents.",
+    "A server returns an HTML response.",
+    "web",
+  ],
+  [
+    "URL",
+    "An address identifying a resource.",
+    "Directions to a particular document.",
+    "https://example.com/about.html",
+    "web",
+  ],
+  [
+    "Domain",
+    "A human-readable host name resolved through DNS.",
+    "A memorable address.",
+    "example.com",
+    "web",
+  ],
+  [
+    "DNS",
+    "The system that helps resolve domain names to network addresses.",
+    "An address lookup, not the document store.",
+    "example.com → an IP address",
+    "web",
+  ],
+  [
+    "Hosting",
+    "Making website resources available through a server or service.",
+    "A place visitors can request files from.",
+    "A static host serves index.html.",
+    "publish",
+  ],
+  [
+    "Repository",
+    "A collection of project files and version history.",
+    "A project archive with labeled checkpoints.",
+    "A local Git repository or its GitHub remote.",
+    "git",
+  ],
+  [
+    "Commit",
+    "A recorded version in a Git repository.",
+    "A labeled checkpoint after choosing changes.",
+    'git commit -m "Add contact page"',
+    "git",
+  ],
+  [
+    "Deployment",
+    "Publishing selected files or build output to a hosting environment.",
+    "Delivering the current project to a public address.",
+    "Upload a folder containing index.html.",
+    "publish",
+  ],
+  [
+    "Terminal",
+    "A text interface where commands are entered.",
+    "Precise written requests to a computer.",
+    "The current directory affects relative paths.",
+    "editor",
+  ],
+  [
+    "Relative path",
+    "Directions resolved from the current document’s location.",
+    "Start from this cupboard, not from the building entrance.",
+    "../images/profile.png",
+    "debug",
+  ],
+  [
+    "href",
+    "The attribute that tells a hyperlink where to go.",
+    "A destination written on a sign.",
+    '<a href="about.html">About</a>',
+    "web",
+  ],
+  [
+    "Selector",
+    "A pattern that chooses elements for styling or scripting.",
+    "A label used to choose a group of parts.",
+    '.card matches class="card".',
+    "css",
+  ],
+  [
+    "Padding",
+    "Space between content and its border.",
+    "Packing inside a box.",
+    "padding: 1rem",
+    "css",
+  ],
+  [
+    "Margin",
+    "Space around a box, outside its border.",
+    "A gap around the package.",
+    "margin: 1rem",
+    "css",
+  ],
+  [
+    "Responsive",
+    "A layout that adapts to available space and user needs.",
+    "Furniture that fits the room.",
+    "A wrapping navigation row.",
+    "css",
+  ],
+  [
+    "Debugging",
+    "Finding and confirming the cause of an observed problem.",
+    "Diagnose before replacing parts.",
+    "Check a missing image’s resolved path.",
+    "debug",
+  ],
+  [
+    "Frontend",
+    "The browser-facing interface and code.",
+    "What visitors interact with.",
+    "HTML, CSS, and browser JavaScript.",
+    "web",
+  ],
+  [
+    "Backend",
+    "Server-side processing, authorization, and data services.",
+    "The processing operation behind the public desk.",
+    "A service that securely processes a real registration.",
+    "web",
+  ],
+  [
+    "Cache",
+    "A stored resource reused according to caching rules.",
+    "A reusable copy, with rules about freshness.",
+    "A CSS file may be reused on another page.",
+    "web",
+  ],
+  [
+    "DOM",
+    "The browser’s parsed document tree.",
+    "The structure constructed from the source blueprint.",
+    "main → h1 → text node",
+    "devtools",
+  ],
+];
+export const stages = [
+  "Computer & files",
+  "Web and HTML",
+  "Structure content",
+  "Forms and multi-page sites",
+  "Semantics and accessibility",
+  "Introductory CSS",
+  "Debug and test",
+  "Git and GitHub",
+  "Publish a website",
+  "Independent capstone",
+  "Continue to JavaScript",
+];
+export const officialChecked = "31 October 2026";

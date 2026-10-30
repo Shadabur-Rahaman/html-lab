@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>HTML LAB V2 browser checks</title>
+    <style>
+      body {
+        background: #151b25;
+        color: #bccfc0;
+        font: 14px/1.8 monospace;
+        padding: 25px;
+      }
+      .fail {
+        color: salmon;
+      }
+      iframe {
+        display: block;
+        width: 320px;
+        height: 160px;
+        background: white;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>HTML LAB V2 browser checks</h1>
+    <p id="status">Running…</p>
+    <ol id="results"></ol>
+    <script type="module" src="./v2-browser.mjs"></script>
+  </body>
+</html>
