@@ -49,6 +49,7 @@ type Seed = {
   starter: VFiles;
   solution?: VFiles;
   sections?: string[];
+  checks?: string[];
 };
 type Props = {
   guided?: boolean;
@@ -505,6 +506,16 @@ export default function ProjectWorkspace({
         "Put index.html at the website root for straightforward static hosting.",
       );
     if (!htmlCount) issues.push("Add an HTML page before testing.");
+    if (seed?.checks) {
+      const docs = Object.entries(project.files)
+        .filter(([n]) => /\.html?$/i.test(n))
+        .map(([, f]) => new DOMParser().parseFromString(f.data, "text/html"));
+      for (const selector of seed.checks)
+        if (!docs.some((d) => d.querySelector(selector)))
+          issues.push(
+            `Advanced project requirement not found: ${selector}. Review the brief and your source.`,
+          );
+    }
     if (seed?.sections) {
       const docs = Object.entries(project.files)
         .filter(([n]) => /\.html?$/i.test(n))
@@ -525,6 +536,7 @@ export default function ProjectWorkspace({
     setReport(issues);
     if (!issues.length) {
       done("v2-tested");
+      if (seed?.id.startsWith("advanced-")) done(seed.id);
       if (
         Object.entries(project.files).some(
           ([n, f]) =>

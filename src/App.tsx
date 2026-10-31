@@ -45,6 +45,7 @@ import {
 } from "./data/resources.mjs";
 import { solutionFor } from "./data/solutions.mjs";
 import { deepDives } from "./data/deepDives.mjs";
+import { advancedLinks } from "./data/advancedLinks.mjs";
 import {
   extraNotes,
   elementExample,
@@ -74,6 +75,7 @@ import {
 } from "./components/Experiments";
 
 const Academy = lazy(() => import("./components/Academy"));
+const Advanced = lazy(() => import("./components/Advanced"));
 type Lesson = (typeof lessons)[number];
 type Progress = {
   completed: string[];
@@ -148,6 +150,7 @@ export default function App() {
     academy: "Development toolkit",
     industry: "Industry Project Lab",
     bugs: "Bug Hunter",
+    advanced: "Advanced HTML",
   };
   const lesson = lessons.find((l) => l.id === id) || lessons[0];
   useEffect(() => {
@@ -272,6 +275,7 @@ export default function App() {
     ["home", "Learning home"],
     ["zero", "Start from Zero"],
     ["tools", "Development toolkit"],
+    ["advanced", "Advanced HTML"],
     ["workspace", "Project Workspace"],
     ["lab", "HTML Live Lab"],
     ["history", "HTML Time Machine"],
@@ -475,14 +479,31 @@ export default function App() {
               </button>
             </div>
           )}
-          {[
-            "zero",
-            "tools",
-            "workspace",
-            "academy",
-            "industry",
-            "bugs",
-          ].includes(page) ? (
+          {page === "advanced" ? (
+            <Suspense
+              fallback={<p role="status">Opening advanced workshop…</p>}
+            >
+              <Advanced
+                key={route}
+                id={id}
+                route={route}
+                teacher={teacher}
+                progress={progress}
+                go={go}
+                done={done}
+                score={score}
+                bookmark={bookmark}
+                saveDraft={saveDraft}
+              />
+            </Suspense>
+          ) : [
+              "zero",
+              "tools",
+              "workspace",
+              "academy",
+              "industry",
+              "bugs",
+            ].includes(page) ? (
             <Suspense
               fallback={<p role="status">Opening your learning tools…</p>}
             >
@@ -827,6 +848,20 @@ export default function App() {
                     <ArrowRight size={16} />
                   </button>
                 ))}
+              {advancedLinks
+                .filter(([key]) =>
+                  progress.bookmarks.includes(`advanced-${key}`),
+                )
+                .map(([key, title]) => (
+                  <button
+                    className="revision-row"
+                    key={key as string}
+                    onClick={() => go(`advanced/${key}`)}
+                  >
+                    <span>Advanced · {title as string}</span>
+                    <ArrowRight size={16} />
+                  </button>
+                ))}
               <h2>Chapter checkpoints</h2>
               {chapters.map((c) => (
                 <button
@@ -910,6 +945,22 @@ export default function App() {
               </button>
             </div>
             <div className="search-results">
+              {advancedLinks
+                .filter(([key, title, foundation]) =>
+                  `${key} ${title} ${foundation}`
+                    .toLowerCase()
+                    .includes(search.toLowerCase()),
+                )
+                .map(([key, title]) => (
+                  <button
+                    key={`advanced-${key}`}
+                    onClick={() => go(`advanced/${key}`)}
+                  >
+                    <span>ADV</span>
+                    {title as string}
+                    <ArrowUpRight size={14} />
+                  </button>
+                ))}
               {lessons
                 .filter((l) =>
                   (l.title + " " + l.what)
@@ -1109,6 +1160,25 @@ function LessonView({
       </div>
       {tab === "learn" ? (
         <>
+          {advancedLinks.some(([, , ids]) => ids.includes(l.id)) && (
+            <details className="note-card">
+              <summary>Go deeper · optional advanced extensions</summary>
+              <p>Continue this topic after the foundation exercise.</p>
+              <div className="chip-row">
+                {advancedLinks
+                  .filter(([, , ids]) => ids.includes(l.id))
+                  .map(([id, title]) => (
+                    <button
+                      className="button secondary compact"
+                      key={id as string}
+                      onClick={() => go(`advanced/${id}`)}
+                    >
+                      {title as string}
+                    </button>
+                  ))}
+              </div>
+            </details>
+          )}
           <div className="lesson-overview">
             <div className="lesson-prose">
               <div className="concept-block">

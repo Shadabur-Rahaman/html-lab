@@ -267,7 +267,7 @@ const samples = {
   meter:
     '<label for="battery">Battery level</label><meter id="battery" min="0" max="100" value="72">72%</meter>',
   dialog:
-    "<h1>Nonmodal dialog example</h1><dialog open><p>This uses the open attribute. A modal dialog uses showModal() through JavaScript.</p></dialog>",
+    "<h1>Nonmodal dialog example</h1><dialog open><p>This uses the open attribute. A modal dialog uses showModal() through JavaScript, or declarative commandfor/command in supporting browsers. See Advanced HTML for focus tests and fallbacks.</p></dialog>",
   time: '<p>Class begins on <time datetime="2026-11-05T10:00:00+05:30">5 November at 10:00 IST</time>.</p>',
   data: '<p>Product: <data value="SKU-104">Everyday notebook</data></p>',
   font: '<h1>Historical example — obsolete</h1><font color="red">Old presentation markup</font><p>Modern equivalent: use a class and CSS color.</p>',

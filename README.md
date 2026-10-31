@@ -1,5 +1,11 @@
 # HTML LAB — Learn HTML by Building
 
+## Advanced Edition 3.0
+
+The optional [Advanced HTML pathway](https://shadabur-rahaman.github.io/html-lab/#advanced) adds eleven deeper workshops, native browser laboratories, advanced quizzes in the existing engine, six targeted projects and instructor material. Existing lessons link to relevant extensions. Original routes, progress, drafts, projects and preview protections are preserved.
+
+See the [gap audit](ADVANCED-AUDIT.md) and [Advanced verification and limits](VERIFICATION-ADVANCED.md). Development browser checks are available at `/tests/advanced-browser.html`, `/tests/advanced-components.html`, and `/tests/accessibility-browser.html` when running Vite. Optional maintainer source validation: `node scripts/validate-advanced.mjs --send-authored-examples` explicitly sends authored reference examples to the external Nu checker; it never accesses learner storage.
+
 Version 2.1 adds [closing-tag practice](https://shadabur-rahaman.github.io/html-lab/#tools/tags), a [parent–child DOM builder](https://shadabur-rahaman.github.io/html-lab/#tools/dom), saved project review rubrics, and CSS/path debugging feedback. See [2.1 verification and limits](VERIFICATION-V2.1.md).
 
 ## V2: start from zero, then build a complete site

@@ -968,3 +968,109 @@
   display: grid;
   gap: 8px;
 }
+.advanced-split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 20px 0;
+}
+.advanced-split > * {
+  min-width: 0;
+}
+.advanced-split iframe,
+.experiment > iframe {
+  width: 100%;
+  min-height: 240px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.advanced-timeline {
+  display: grid;
+  gap: 12px;
+  padding-left: 28px;
+}
+.advanced-timeline li {
+  padding: 14px;
+  border-left: 3px solid var(--orange);
+  background: #1a1f29;
+}
+.loading-track {
+  padding: 12px 0;
+}
+.loading-track span {
+  display: block;
+  min-width: 120px;
+  background: #263f45;
+  padding: 12px;
+  border-radius: 5px;
+}
+.metadata-report > div {
+  display: grid;
+  grid-template-columns: minmax(100px, 1fr) 3fr;
+  border-bottom: 1px solid #2d3440;
+  gap: 16px;
+  padding: 14px 0;
+}
+.metadata-report dt {
+  font-weight: 600;
+}
+.metadata-report dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.metadata-report small {
+  display: block;
+  color: #a9b2c3;
+  margin-top: 6px;
+}
+.experiment dialog {
+  background: #202631;
+  color: #eef1f7;
+  border: 1px solid #576171;
+  border-radius: 12px;
+  max-width: min(90vw, 35rem);
+  padding: 28px;
+}
+.experiment dialog::backdrop {
+  background: #080d18b8;
+}
+.native-popover {
+  background: #202631;
+  color: #eef1f7;
+  border: 1px solid #576171;
+  border-radius: 10px;
+  padding: 24px;
+  max-width: min(90vw, 28rem);
+}
+.advanced-clones {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+/* Keep the existing palette while making small navigation labels readable. */
+.brand small,
+.workspace-label,
+.sidebar-course-title span:last-child,
+.chapter-link .chapter-number,
+.breadcrumb > span,
+.search-button > span,
+.search-button kbd,
+.app-footer > span {
+  color: #909bad;
+}
+.experiment [inert] {
+  opacity: 0.55;
+}
+.experiment [hidden] {
+  display: none !important;
+}
+@media (max-width: 760px) {
+  .advanced-split {
+    grid-template-columns: 1fr;
+  }
+  .metadata-report > div {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+}

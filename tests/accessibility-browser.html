@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Advanced app accessibility checks</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <aside
+      aria-label="Development accessibility checks"
+      style="
+        position: fixed;
+        bottom: 0;
+        right: 0;
+        z-index: 10000;
+        background: #fff;
+        color: #111;
+        padding: 12px;
+        width: min(95vw, 26rem);
+        max-height: 50vh;
+        overflow: auto;
+      "
+    >
+      <button id="run-axe">Run axe accessibility scan</button
+      ><button id="hide-axe">Hide scan report</button>
+      <pre id="axe-result" style="white-space: pre-wrap; color: #111">
+Choose a workshop view, then run a scan.</pre
+      >
+    </aside>
+    <script type="module" src="./accessibility-browser.tsx"></script>
+  </body>
+</html>

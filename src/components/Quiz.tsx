@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ArrowRight, CheckCircle2, RotateCcw, Lightbulb } from "lucide-react";
 import { lessons } from "../data/curriculum.mjs";
-type Question = {
+export type Question = {
   question: string;
   options: string[];
   answer: number;
@@ -76,20 +76,33 @@ export default function Quiz({
   chapter,
   onScore,
   final = false,
+  questions,
+  fragment,
+  matching,
 }: {
   chapter: number;
   onScore: (score: number) => void;
   final?: boolean;
+  questions?: Question[];
+  fragment?: { prompt: string; answer: string; reason: string };
+  matching?: string[][];
 }) {
-  const qs: Question[] = final
-    ? lessons.map((l) => ({
-        question: l.question,
-        options: l.options,
-        answer: l.answer,
-        reason: l.how,
-        type: `CHAPTER ${l.chapter}`,
-      }))
-    : chapterQuestions(chapter);
+  const fragmentTask = fragment || {
+    prompt: "<p>Hello, learner! ____",
+    answer: "</p>",
+    reason: "A normal paragraph closes with </p>.",
+  };
+  const qs: Question[] =
+    questions ||
+    (final
+      ? lessons.map((l) => ({
+          question: l.question,
+          options: l.options,
+          answer: l.answer,
+          reason: l.how,
+          type: `CHAPTER ${l.chapter}`,
+        }))
+      : chapterQuestions(chapter));
   const [index, setIndex] = useState(0),
     [choice, setChoice] = useState<number | null>(null),
     [submitted, setSubmitted] = useState(false),
@@ -201,13 +214,13 @@ export default function Quiz({
           )}
         </>
       )}
-      {!final && (
+      {!final && (!questions || fragment) && (
         <details className="fill-task">
-          <summary>Bonus · Fill the missing closing tag</summary>
+          <summary>Bonus · Complete the HTML fragment</summary>
           <p>
-            Complete: <code>&lt;p&gt;Hello, learner! ____</code>
+            Complete: <code>{fragmentTask.prompt}</code>
           </p>
-          <label htmlFor="missing-tag">Missing tag</label>
+          <label htmlFor="missing-tag">Missing fragment</label>
           <input
             id="missing-tag"
             value={fill}
@@ -217,40 +230,38 @@ export default function Quiz({
             className="button secondary compact"
             onClick={() =>
               setFillFeedback(
-                fill.trim().toLowerCase() === "</p>"
-                  ? "Correct: </p> closes the paragraph."
-                  : "Try again: normal elements close with </element-name>.",
+                fill.trim().toLowerCase() === fragmentTask.answer.toLowerCase()
+                  ? `Correct. ${fragmentTask.reason}`
+                  : `Review: ${fragmentTask.reason} Expected fragment: ${fragmentTask.answer}`,
               )
             }
           >
-            Check tag
+            Check fragment
           </button>
           <p role="status">{fillFeedback}</p>
         </details>
       )}
-      {!final && <MatchingTask />}
+      {!final && (!questions || matching) && <MatchingTask pairs={matching} />}
     </div>
   );
 }
 
-function MatchingTask() {
-  const pairs = [
+function MatchingTask({ pairs: suppliedPairs }: { pairs?: string[][] }) {
+  const pairs = suppliedPairs || [
     ["nav", "Major navigation"],
     ["main", "Dominant content"],
     ["label", "Name a form control"],
   ];
-  const [answers, setAnswers] = useState(["", "", ""]);
+  const [answers, setAnswers] = useState(pairs.map(() => ""));
   const [checked, setChecked] = useState(false);
   return (
     <details className="fill-task">
-      <summary>Bonus · Match elements to their purpose</summary>
-      <p>
-        Match each element by its meaning, rather than its default appearance.
-      </p>
+      <summary>Bonus · Match markup to its purpose</summary>
+      <p>Match each element or attribute to its purpose.</p>
       {pairs.map(([tag], index) => (
         <div className="matching-row" key={tag}>
           <label htmlFor={`match-${tag}`}>
-            <code>&lt;{tag}&gt;</code>
+            <code>{suppliedPairs ? tag : `<${tag}>`}</code>
           </label>
           <select
             id={`match-${tag}`}
@@ -263,11 +274,7 @@ function MatchingTask() {
             }}
           >
             <option value="">Choose a purpose</option>
-            {[
-              "Name a form control",
-              "Major navigation",
-              "Dominant content",
-            ].map((purpose) => (
+            {[...pairs].reverse().map(([, purpose]) => (
               <option key={purpose}>{purpose}</option>
             ))}
           </select>
@@ -288,7 +295,7 @@ function MatchingTask() {
         >
           {answers.every((a, i) => a === pairs[i][1])
             ? "All matched correctly."
-            : "Review the pairs: nav groups major navigation; main contains dominant content; label names a control."}
+            : `Review the pairs: ${pairs.map(([tag, purpose]) => `${tag} → ${purpose}`).join("; ")}.`}
         </p>
       )}
     </details>
