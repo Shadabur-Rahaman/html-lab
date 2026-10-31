@@ -1,5 +1,7 @@
 # HTML LAB — Learn HTML by Building
 
+Version 2.1 adds [closing-tag practice](https://shadabur-rahaman.github.io/html-lab/#tools/tags), a [parent–child DOM builder](https://shadabur-rahaman.github.io/html-lab/#tools/dom), saved project review rubrics, and CSS/path debugging feedback. See [2.1 verification and limits](VERIFICATION-V2.1.md).
+
 ## V2: start from zero, then build a complete site
 
 The original course and progress records are preserved. New optional entry points are **Start from Zero**, **Development toolkit**, and **Project Workspace**. V2 adds thirteen guides, a safe multi-file HTML/CSS workspace with IndexedDB and ZIPs, seven additional industry projects, seven debugging challenges, CSS/Git/deployment workshops, a beginner glossary, classroom materials, and opt-in offline lesson storage.

@@ -58,7 +58,7 @@ export function projectPreview(files, page, token) {
       link.rel === "stylesheet" &&
       path &&
       files[path]?.type === "text" &&
-      path.endsWith(".css")
+      /\.css$/i.test(path)
     ) {
       const style = doc.createElement("style");
       style.textContent = css(files[path].data, path);

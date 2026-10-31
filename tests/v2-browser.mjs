@@ -6,6 +6,7 @@ import {
 } from "../src/projectModel.mjs";
 import { starterFiles, industryProjects } from "../src/data/v2Projects.mjs";
 import { parseProgress, STORAGE_KEY, audit } from "../src/lib.mjs";
+import { cssDiagnostics } from "../src/projectDiagnostics.mjs";
 const originalProgress = localStorage.getItem(STORAGE_KEY);
 let passed = 0,
   failed = 0;
@@ -159,6 +160,60 @@ check(
     JSON.stringify(parseProgress(originalProgress)) ===
     JSON.stringify(parseProgress(localStorage.getItem(STORAGE_KEY))),
 );
+const cssFixture = {
+  "index.html": {
+    type: "text",
+    data: '<link rel="stylesheet" href="css/STYLE.CSS"><main class="card">Hello</main>',
+  },
+  "css/STYLE.CSS": {
+    type: "text",
+    data: ".card {color:red} .typo {color:blue} @media(min-width:1px){.nested-typo{color:red}} .card:hover{color:green} .card{background:url(../images/missing.png)}",
+  },
+};
+const cssReport = cssDiagnostics(cssFixture);
+check(
+  "CSS diagnostics resolve resources relative to stylesheet and inspect nested static selectors",
+  () =>
+    cssReport.some((s) =>
+      s.includes("missing CSS resource ../images/missing.png"),
+    ) &&
+    cssReport.some((s) => s.includes("selector .typo")) &&
+    cssReport.some((s) => s.includes("selector .nested-typo")) &&
+    !cssReport.some((s) => s.includes("selector .card")),
+);
+check(
+  "unused stylesheets do not produce misleading selector advice",
+  () =>
+    cssDiagnostics({
+      "unused.css": { type: "text", data: ".unused{color:red}" },
+    }).length === 0,
+);
+check("uppercase stylesheet extension renders in secure preview", () =>
+  projectPreview(cssFixture, "index.html", token).html.includes(".typo"),
+);
+const reviewRecord = {
+  id: "review-test-" + Date.now(),
+  name: "Review test",
+  files: starterFiles(),
+  updated: Date.now(),
+  review: {
+    scores: { Structure: 3 },
+    notes: "Tested with keyboard.",
+    stale: true,
+  },
+};
+await projectStore("save", reviewRecord);
+const reviewSaved = (await projectStore("list")).find(
+  (p) => p.id === reviewRecord.id,
+);
+check(
+  "saved project rubric survives IndexedDB without a schema migration",
+  () =>
+    reviewSaved?.review?.scores.Structure === 3 &&
+    reviewSaved.review.notes === "Tested with keyboard." &&
+    reviewSaved.review.stale,
+);
+await projectStore("delete", reviewRecord.id);
 document.querySelector("#status").textContent =
   `${passed} passed · ${failed} failed`;
 document.documentElement.dataset.result = failed ? "failed" : "passed";

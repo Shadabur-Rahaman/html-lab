@@ -14,6 +14,7 @@ import { industryProjects } from "../data/v2Projects.mjs";
 import { bugs } from "../data/bugs.mjs";
 import ProjectWorkspace, { type VFiles } from "./ProjectWorkspace";
 import OfflineLessons from "./OfflineLessons";
+import LearningGames from "./LearningGames";
 import { downloadBlob } from "../projectModel.mjs";
 import { catalogGroups, elementNotes } from "../data/resources.mjs";
 import { extraNotes } from "../data/elements.mjs";
@@ -54,6 +55,8 @@ export default function Academy({
   teacher,
   next,
 }: Props) {
+  if (page === "tools" && (id === "tags" || id === "dom"))
+    return <LearningGames kind={id} done={done} />;
   if (page === "workspace")
     return (
       <>
@@ -323,6 +326,18 @@ function Toolkit({ go, progress }: { go: Props["go"]; progress: Progress }) {
         <span className="eyebrow">USE THE TOOLS YOU ALREADY KNOW</span>
         <h2>Your HTML knowledge tools</h2>
         <div className="chip-row">
+          <button
+            className="button secondary compact"
+            onClick={() => go("tools/tags")}
+          >
+            Closing-tag game
+          </button>
+          <button
+            className="button secondary compact"
+            onClick={() => go("tools/dom")}
+          >
+            Parent–child DOM builder
+          </button>
           <button
             className="button secondary compact"
             onClick={() => go("elements")}

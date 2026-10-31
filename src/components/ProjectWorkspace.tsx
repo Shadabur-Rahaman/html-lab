@@ -32,9 +32,17 @@ import {
 import { projectPreview } from "../projectPreview.mjs";
 import { starterFiles } from "../data/v2Projects.mjs";
 import { audit, checkStructure } from "../lib.mjs";
+import { cssDiagnostics } from "../projectDiagnostics.mjs";
+import ProjectReview, { type Review } from "./ProjectReview";
 export type VFile = { type: string; data: string; mime?: string };
 export type VFiles = Record<string, VFile>;
-type Project = { id: string; name: string; files: VFiles; updated: number };
+type Project = {
+  id: string;
+  name: string;
+  files: VFiles;
+  updated: number;
+  review?: Review;
+};
 type Seed = {
   id: string;
   title: string;
@@ -79,6 +87,7 @@ export default function ProjectWorkspace({
     [hint, setHint] = useState(0),
     [storageReady, setStorageReady] = useState(false),
     [report, setReport] = useState<string[] | null>(null),
+    [cssAdvice, setCssAdvice] = useState<string[]>([]),
     [previewFiles, setPreviewFiles] = useState(project.files),
     [savedEvidence, setSavedEvidence] = useState(false),
     [previewOpened, setPreviewOpened] = useState(false),
@@ -197,7 +206,12 @@ export default function ProjectWorkspace({
     try {
       validateFiles(files);
       setUndo(project.files);
-      setProject((p) => ({ ...p, files, updated: Date.now() }));
+      setProject((p) => ({
+        ...p,
+        files,
+        updated: Date.now(),
+        review: p.review ? { ...p.review, stale: true } : undefined,
+      }));
       if (!files[active]) {
         const first =
           Object.keys(files).find((n) => files[n].type !== "folder") || "";
@@ -211,6 +225,7 @@ export default function ProjectWorkspace({
       setDirty(true);
       setError("");
       setReport(null);
+      setCssAdvice([]);
       setSavedEvidence(false);
       setManualReviewed(false);
     } catch (e) {
@@ -363,6 +378,7 @@ export default function ProjectWorkspace({
       setPreviewFiles(p.files);
       setDirty(false);
       setReport(null);
+      setCssAdvice([]);
       setSavedEvidence(false);
       setPreviewOpened(false);
       setUndo(null);
@@ -413,6 +429,13 @@ export default function ProjectWorkspace({
   }
   function check() {
     const issues: string[] = [];
+    const cssFindings = cssDiagnostics(project.files);
+    issues.push(
+      ...cssFindings.filter((s) => s.includes("missing CSS resource")),
+    );
+    setCssAdvice(
+      cssFindings.filter((s) => !s.includes("missing CSS resource")),
+    );
     if (overflow === null || previewFiles !== project.files)
       issues.push(
         "Update the browser preview and wait for its viewport measurement before completing this check.",
@@ -432,7 +455,13 @@ export default function ProjectWorkspace({
       ]) {
         const ref = node.getAttribute("href") || node.getAttribute("src") || "";
         if (ref.startsWith("#")) {
-          if (!doc.getElementById(ref.slice(1)))
+          let fragment = ref.slice(1);
+          try {
+            fragment = decodeURIComponent(fragment);
+          } catch {
+            /* Show the malformed fragment below. */
+          }
+          if (fragment && !doc.getElementById(fragment))
             issues.push(`${name}: fragment destination not found: ${ref}`);
           continue;
         }
@@ -440,6 +469,35 @@ export default function ProjectWorkspace({
         const dest = resolvePath(name, ref);
         if (!dest || !project.files[dest])
           issues.push(`${name}: missing local resource ${ref}`);
+        else {
+          if (node.tagName === "LINK" && !/\.css$/i.test(dest))
+            issues.push(`${name}: stylesheet ${ref} must point to a CSS file.`);
+          if (node.tagName === "IMG" && project.files[dest].type !== "image")
+            issues.push(
+              `${name}: image ${ref} must point to an imported raster image.`,
+            );
+          if (
+            node.tagName === "A" &&
+            /\.html?$/i.test(dest) &&
+            ref.includes("#")
+          ) {
+            let fragment = ref.slice(ref.indexOf("#") + 1);
+            try {
+              fragment = decodeURIComponent(fragment);
+            } catch {
+              /* Keep the original text for feedback. */
+            }
+            if (
+              fragment &&
+              !new DOMParser()
+                .parseFromString(project.files[dest].data, "text/html")
+                .getElementById(fragment)
+            )
+              issues.push(
+                `${name}: fragment destination not found in ${dest}: #${fragment}`,
+              );
+          }
+        }
       }
     }
     if (!Object.keys(project.files).some((n) => n === "index.html"))
@@ -850,7 +908,12 @@ export default function ProjectWorkspace({
           onClick={() => {
             if (undo) {
               const previous = project.files;
-              setProject((p) => ({ ...p, files: undo }));
+              setProject((p) => ({
+                ...p,
+                files: undo,
+                updated: Date.now(),
+                review: p.review ? { ...p.review, stale: true } : undefined,
+              }));
               setUndo(previous);
               setDirty(true);
             }
@@ -1079,6 +1142,28 @@ export default function ProjectWorkspace({
           )}
         </div>
       )}
+      {cssAdvice.length > 0 && (
+        <div className="note-card">
+          <h3>CSS suggestions</h3>
+          <p>
+            Unused selectors can be intentional. These suggestions do not block
+            completion. CSS checks are not a complete syntax validator.
+          </p>
+          <ul>
+            {cssAdvice.map((s, i) => (
+              <li key={i}>{s}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <ProjectReview
+        name={project.name}
+        value={project.review}
+        change={(review) => {
+          setProject((p) => ({ ...p, review }));
+          setDirty(true);
+        }}
+      />
       {teacher && (
         <div className="note-card">
           <h3>Classroom use · device-local workspace</h3>
