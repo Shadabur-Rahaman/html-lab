@@ -1,0 +1,4 @@
+# Shared Auth settings belong to the existing project. Do not replace its
+# site_url, signup switches or JS LAB recovery redirects from this checkout.
+[functions.html-resource-api]
+verify_jwt = false

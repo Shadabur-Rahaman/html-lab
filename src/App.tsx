@@ -76,6 +76,8 @@ import {
 
 const Academy = lazy(() => import("./components/Academy"));
 const Advanced = lazy(() => import("./components/Advanced"));
+const CloudLibrary = lazy(() => import('./cloudResources/Library'));
+const CloudManager = lazy(() => import('./cloudResources/TeacherResources'));
 type Lesson = (typeof lessons)[number];
 type Progress = {
   completed: string[];
@@ -132,7 +134,7 @@ function NavIcon({ name }: { name: string }) {
   return <Icon size={17} />;
 }
 export default function App() {
-  const [route, setRoute] = useState(location.hash.slice(1) || "home"),
+  const [route, setRoute] = useState(new URLSearchParams(location.search).has('html-resource-recovery') ? 'teacher/resources' : location.hash.slice(1) || "home"),
     [progress, setProgress] = useState<Progress>(load),
     [teacher, setTeacher] = useState(false),
     [menu, setMenu] = useState(false),
@@ -151,6 +153,8 @@ export default function App() {
     industry: "Industry Project Lab",
     bugs: "Bug Hunter",
     advanced: "Advanced HTML",
+    resources: 'Study Materials',
+    teacher: 'Manage Study Materials',
   };
   const lesson = lessons.find((l) => l.id === id) || lessons[0];
   useEffect(() => {
@@ -276,6 +280,7 @@ export default function App() {
     ["zero", "Start from Zero"],
     ["tools", "Development toolkit"],
     ["advanced", "Advanced HTML"],
+    ["resources", "Study Materials"],
     ["workspace", "Project Workspace"],
     ["lab", "HTML Live Lab"],
     ["history", "HTML Time Machine"],
@@ -466,6 +471,7 @@ export default function App() {
             <div className="teacher-banner">
               <GraduationCap size={18} />
               <b>Teacher mode</b>
+              <button className="button secondary compact" onClick={()=>go('teacher/resources')}>Manage Study Materials</button>
               <span>
                 Notes, questions, and classroom planning are available in each
                 lesson.
@@ -479,7 +485,7 @@ export default function App() {
               </button>
             </div>
           )}
-          {page === "advanced" ? (
+          {page === 'resources' || (page==='teacher' && id==='resources') ? <Suspense fallback={<p role="status">Opening study materials…</p>}>{page==='resources'?<CloudLibrary/>:<CloudManager/>}</Suspense> : page === "advanced" ? (
             <Suspense
               fallback={<p role="status">Opening advanced workshop…</p>}
             >
@@ -1160,6 +1166,7 @@ function LessonView({
       </div>
       {tab === "learn" ? (
         <>
+          <Suspense fallback={null}><CloudLibrary key={l.id} chapter={l.chapter} lesson={l.id} compact/></Suspense>
           {advancedLinks.some(([, , ids]) => ids.includes(l.id)) && (
             <details className="note-card">
               <summary>Go deeper · optional advanced extensions</summary>
