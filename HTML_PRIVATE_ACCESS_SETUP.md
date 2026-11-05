@@ -1,6 +1,6 @@
 # HTML LAB private classroom setup
 
-The private application uses the existing HTML LAB codebase, a dedicated Cloudflare Pages project, Cloudflare Access email PIN authentication and a separate HTML enrollment database. The public GitHub Pages site remains at its existing URL.
+The private application uses the existing HTML LAB codebase, a dedicated Cloudflare Pages project, Cloudflare Access email PIN authentication and a separate HTML enrollment database. The former public GitHub Pages site was retired at the owner's request on 5 November 2026; the private Cloudflare classroom is the live teaching destination.
 
 ## Release status and privacy boundary
 
@@ -10,7 +10,7 @@ Implementation date: **5 November 2026**. The HTML-only enrollment schema, serve
 
 Wrangler deployment credentials alone could not administer Access (HTTP 403, code 1010); the saved Access configuration was completed and reviewed through the authenticated dashboard instead. Deployment permission is not evidence of Access administration permission.
 
-The GitHub Pages copy remains public, including the same lessons and published classroom resources through the existing public resource API. Protecting the private domain does **not** make those copies private. Draft/unpublished resources remain restricted. Already downloaded files, exported projects, screenshots or previously delivered code cannot be erased remotely. Moving to private-only later requires explicit approval to retire the public deployment and public published-resource delivery; that change is not part of this release.
+The owner subsequently authorized retirement of the public GitHub Pages hosting, matching JS LAB. The Pages site is unpublished and its workflow now only verifies builds/tests, so pushes cannot automatically republish it. The source repository and existing public published-resource API are unchanged by this hosting-only action. Protecting the private domain and closing Pages do **not** make those other copies private. Draft/unpublished resources remain restricted. Already downloaded files, exported projects, screenshots or previously delivered code cannot be erased remotely.
 
 ## Architecture and audit
 
@@ -185,6 +185,6 @@ Before declaring the classroom ready, use real owner-approved identities to veri
 
 Store only names, normalized emails, enrollment dates/status and necessary verification/activity/audit metadata. Restrict Supabase/Cloudflare administration, define school-approved retention/export/deletion procedures, and review provider logs/settings. No automatic student deletion, resource cleanup or retention cron is enabled by this upgrade. Enrollment logs are not classroom learning analytics; last activity is a throttled server access observation, not a full browser history.
 
-To roll back UI changes, deploy the last known good **protected** private artifact and retain the server gateway/fail-closed configuration. Never publish `dist` to the private project to recover from an error. Public GitHub Pages continues through its existing workflow. Do not drop enrollment tables or reset the shared database as a frontend rollback.
+To roll back UI changes, deploy the last known good **protected** private artifact and retain the server gateway/fail-closed configuration. Never publish `dist` to the private project to recover from an error. The GitHub workflow only verifies tests and builds; Pages publishing was removed. Restoring public hosting requires a deliberate owner-approved change to the workflow and Pages settings. Do not drop enrollment tables or reset the shared database as a frontend rollback.
 
 Official references: [Pages preview protection](https://developers.cloudflare.com/pages/configuration/preview-deployments/), [Pages production-domain Access setup](https://developers.cloudflare.com/pages/platform/known-issues/#enable-access-on-your-pagesdev-domain), [Access JWT validation](https://developers.cloudflare.com/cloudflare-one/access-controls/applications/http-apps/authorization-cookie/validating-json/), [Pages Access plugin](https://developers.cloudflare.com/pages/functions/plugins/cloudflare-access/), [Pages routing](https://developers.cloudflare.com/pages/functions/routing/).

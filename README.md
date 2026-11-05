@@ -2,11 +2,11 @@
 
 ## Advanced Edition 3.0
 
-The optional [Advanced HTML pathway](https://shadabur-rahaman.github.io/html-lab/#advanced) adds eleven deeper workshops, native browser laboratories, advanced quizzes in the existing engine, six targeted projects and instructor material. Existing lessons link to relevant extensions. Original routes, progress, drafts, projects and preview protections are preserved.
+The optional [Advanced HTML pathway](https://html-lab-private.pages.dev/#advanced) adds eleven deeper workshops, native browser laboratories, advanced quizzes in the existing engine, six targeted projects and instructor material. Existing lessons link to relevant extensions. Original routes, progress, drafts, projects and preview protections are preserved.
 
 See the [gap audit](ADVANCED-AUDIT.md) and [Advanced verification and limits](VERIFICATION-ADVANCED.md). Development browser checks are available at `/tests/advanced-browser.html`, `/tests/advanced-components.html`, and `/tests/accessibility-browser.html` when running Vite. Optional maintainer source validation: `node scripts/validate-advanced.mjs --send-authored-examples` explicitly sends authored reference examples to the external Nu checker; it never accesses learner storage.
 
-Version 2.1 adds [closing-tag practice](https://shadabur-rahaman.github.io/html-lab/#tools/tags), a [parent–child DOM builder](https://shadabur-rahaman.github.io/html-lab/#tools/dom), saved project review rubrics, and CSS/path debugging feedback. See [2.1 verification and limits](VERIFICATION-V2.1.md).
+Version 2.1 adds [closing-tag practice](https://html-lab-private.pages.dev/#tools/tags), a [parent–child DOM builder](https://html-lab-private.pages.dev/#tools/dom), saved project review rubrics, and CSS/path debugging feedback. See [2.1 verification and limits](VERIFICATION-V2.1.md).
 
 ## V2: start from zero, then build a complete site
 
@@ -83,11 +83,13 @@ Downloaded HTML is learner-authored source. It does not bundle assets, create mu
 
 Session-planner notes are temporary while that view remains open. Centralized classroom rosters, authentication, and shared grade tracking are outside this frontend application. V2 adds a separate multi-file workspace and individual device-local result/rubric exports; it does not change the original single-document lab.
 
-## GitHub Pages
+## Private classroom hosting
 
-Copy the contents of **this directory** into a new `html-lab` repository. Keep JS LAB in its existing repository. The included `.github/workflows/pages.yml` assumes this project is at that new repository’s root. Select **GitHub Actions** in Settings → Pages and push to `main`, or run the workflow manually.
+Open [HTML LAB Private Classroom](https://html-lab-private.pages.dev/). Cloudflare Access email PIN and server-side HTML enrollment protect the classroom. See [private access setup](HTML_PRIVATE_ACCESS_SETUP.md).
 
-Vite uses `base: './'`; assets use relative paths; the app uses hash routing. `dist/` is the production artifact. The public deployment target is [HTML LAB on GitHub Pages](https://shadabur-rahaman.github.io/html-lab/). See the repository’s [Actions page](https://github.com/Shadabur-Rahaman/html-lab/actions) for deployment status.
+The public GitHub Pages site was retired at the owner's request on 5 November 2026, matching JS LAB. `.github/workflows/pages.yml` now runs tests, database permission checks, and both builds without publishing a Pages artifact or deployment. Future pushes do not republish the public site. The repository, lesson source, and existing public resource API are unchanged; this is a hosting shutdown, not a claim that every copy is private.
+
+Vite uses `base: './'` and hash routing. `dist/` remains available for local build checks; only the protected `dist-private/` artifact is deployed to the private Cloudflare project. See the repository's [Actions page](https://github.com/Shadabur-Rahaman/html-lab/actions) for verification status.
 
 ## Sources and assets
 
