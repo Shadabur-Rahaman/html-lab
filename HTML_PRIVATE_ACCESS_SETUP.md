@@ -6,7 +6,7 @@ The private application uses the existing HTML LAB codebase, a dedicated Cloudfl
 
 Implementation date: **5 November 2026**. The HTML-only enrollment schema, server gateway, teacher Student Management screen and separate private build are implemented. The Pages project is `html-lab-private`; both production and preview project settings use **fail closed**. The worker protects every document, asset and API request.
 
-**Access configuration must be completed and verified before this is a usable private classroom.** The available Wrangler deployment credential was explicitly rejected when creating an Access application (HTTP 403, code 1010). Deployment credentials do not imply Access administration rights. No production/preview Access policies or successful email PIN delivery are claimed merely from deployment. Until the real HTML Access audience is supplied, requests receive a closed setup error, never lesson assets. Real student PIN testing was deferred at the owner's request.
+**Access-policy review and preview Access setup still require an authorized dashboard session.** The available Wrangler deployment credential was explicitly rejected when creating an Access application (HTTP 403, code 1010). Deployment credentials do not imply Access administration rights. Live inspection subsequently found that the production hostname already has a separate Access application and an email PIN form. Its actual HTML audience was verified as different from JS LAB's and installed in the server bindings. No saved policy rules or successful PIN delivery are claimed from that form alone. Preview/hash endpoints remain protected by the server identity/enrollment gate, but they did not redirect to an Access application in the unsigned checks. Real student PIN testing was deferred at the owner's request; a real teacher PIN session still needs verification.
 
 The GitHub Pages copy remains public, including the same lessons and published classroom resources through the existing public resource API. Protecting the private domain does **not** make those copies private. Draft/unpublished resources remain restricted. Already downloaded files, exported projects, screenshots or previously delivered code cannot be erased remotely. Moving to private-only later requires explicit approval to retire the public deployment and public published-resource delivery; that change is not part of this release.
 
@@ -77,15 +77,17 @@ No asset, media, PDF worker/font/WASM or alternate document route is excluded. A
 
 Use the same Zero Trust account/team as JS LAB, **without editing JS LAB applications or policies**. Open Cloudflare → **Zero Trust → Access → Applications**.
 
-Cloudflare's Pages-specific workflow matters: **Workers & Pages → html-lab-private → Settings → General → Enable access policy** initially protects **previews only**. It does not by itself protect `html-lab-private.pages.dev`.
+Cloudflare's Pages-specific workflow matters: **Workers & Pages → html-lab-private → Settings → General → Enable access policy** initially protects **previews only**. It does not by itself protect `html-lab-private.pages.dev`. This project's production hostname already redirects to the existing team's PIN form; **preserve that existing application and do not add a duplicate production destination**.
 
-Follow the current [Pages known-issues instructions](https://developers.cloudflare.com/pages/platform/known-issues/#enable-access-on-your-pagesdev-domain):
+For the current project:
 
-1. Enable the Pages access policy to generate the preview application.
-2. In Zero Trust Access applications, open that generated HTML project application. Under its public hostname, remove the `*` subdomain and save so it covers **`html-lab-private.pages.dev`**. Name it **HTML LAB — Private Classroom**. Remove any duplicate production destination.
-3. Return to the Pages project's General settings and enable the access policy again. This regenerates protection for **`*.html-lab-private.pages.dev`**. Name that application **HTML LAB — Private Classroom Previews**.
-4. Review both generated applications and their public hostnames. Some current dashboards allow adding the two destinations directly; use their supported hostname controls rather than forcing a wildcard into a dropdown. Do not assume a saved wildcard covers the apex production domain.
-5. Attach the HTML-only policies below to **both** applications. Review generated defaults; there must be no Everyone, Bypass, broad email-domain or service-token policy granting classroom access.
+1. In Zero Trust Access applications, find the existing **`html-lab-private.pages.dev`** destination. Verify its AUD matches the observed production value `6e74faf7a9d459208cc5a96f6fc1f19b87beab9d96fd0229e400204265b94b46`. Name it **HTML LAB — Private Classroom** if needed, without replacing it or adding another production destination.
+2. Review its exact-email teacher/student policies and PIN provider as described below.
+3. In the Pages project's General settings, enable its access policy to generate preview protection if it is absent. If an HTML preview application already exists, inspect and reuse it instead. Name it **HTML LAB — Private Classroom Previews**.
+4. Verify the preview application's destination is **`*.html-lab-private.pages.dev`**, including deployment hashes and branch aliases. Use Pages' supported hostname controls rather than forcing a wildcard into a dropdown. A wildcard alone does not cover the production apex.
+5. Attach the HTML-only policies below to **both** applications. Review generated defaults; there must be no Everyone, Bypass, broad email-domain or service-token policy granting classroom access. Record the preview application's own AUD and add it to the server configuration.
+
+For a different fresh project with no production application, follow the [Pages known-issues procedure](https://developers.cloudflare.com/pages/platform/known-issues/#enable-access-on-your-pagesdev-domain): generate preview protection, convert that generated destination from wildcard to production, then enable Pages access policy again for a separate preview app. That conversion is unnecessary for this project's already existing production app.
 
 Configure a **1 hour** application session initially. Under Login methods, select the existing **One-time PIN** provider. If it is not offered, enable it under the team's authentication/login-method settings first. Use PIN email authentication, not a Cloudflare-account login requirement. Disable acceptance of unrelated default providers for these HTML apps if the dashboard offers that option. Do not alter the shared provider's behavior for JS LAB.
 
@@ -115,7 +117,7 @@ The script places these values into encrypted Pages server bindings for **both p
 - `SUPABASE_URL`: verified shared backend URL.
 - `SUPABASE_SERVICE_ROLE_KEY`: obtained in process memory and sent over child stdin, never a command argument/file/browser variable.
 
-For preliminary deployment, the helper supports `--prepare-server-bindings` in place of the AUD. That configures the other server bindings but deliberately leaves `ACCESS_AUD` absent. **It cannot enable login.** The prepared release uses that state until actual HTML Access configuration is available.
+For preliminary deployment, the helper supports `--prepare-server-bindings` in place of the AUD. That configures the other server bindings but deliberately leaves `ACCESS_AUD` absent. **It cannot enable login.** This release has progressed beyond preparation: both environments now contain the actual observed HTML production AUD. Add the separate HTML preview AUD when its Access application is configured. Do not substitute the JS audience.
 
 Redeploy production and preview after setting bindings so each deployment receives the new environment. Do not set privileged bindings in `VITE_` variables, GitHub public variables, `wrangler.jsonc`, browser code or committed `.env` files. No Cloudflare administrative token is required in the running app; policy synchronization remains manual.
 
