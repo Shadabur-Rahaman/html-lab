@@ -1,11 +1,11 @@
 // Owner-terminal tools only. Never import into browser code.
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
-export function publicSettings() {
-  const local = fs.existsSync(".env.local")
+export function publicSettings(settingsFile=".env.local") {
+  const local = fs.existsSync(settingsFile)
     ? Object.fromEntries(
         fs
-          .readFileSync(".env.local", "utf8")
+          .readFileSync(settingsFile, "utf8")
           .split(/\r?\n/)
           .filter((line) => line.includes("="))
           .map((line) => {

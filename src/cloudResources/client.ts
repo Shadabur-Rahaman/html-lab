@@ -1,4 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
+import {privateAccess,privateApi,uploadHeaders} from '../access/session';
+import {protectedJson} from '../access/http.mjs';
 import { Upload } from "tus-js-client";
 import { publicConfig } from "./config.mjs";
 import {
@@ -10,7 +12,7 @@ import {
 export const config = publicConfig(
   (import.meta as ImportMeta & { env: Record<string, string> }).env,
 );
-export const cloud = config
+export const cloud = config && !privateAccess
   ? createClient(config.url, config.key, {
       auth: {
         storageKey: "html-lab-resource-auth-v5",
@@ -21,6 +23,7 @@ export const cloud = config
       },
     })
   : null;
+export const resourcesAvailable=privateAccess||!!cloud;
 export type Category = {
   id: string;
   name: string;
@@ -66,6 +69,7 @@ export async function api<T = unknown>(
   action: string,
   body: Record<string, unknown> = {},
 ): Promise<T> {
+  if(privateAccess){const value=await privateApi<T>('/api/resources',{action,...body});if(['finalize','edit','purge','category','settings'].includes(action))clearResourceCache();return value;}
   if (!cloud || !config) throw Error("Connect a Supabase project first.");
   const {
     data: { session },
@@ -97,6 +101,7 @@ export async function api<T = unknown>(
   return value as T;
 }
 async function fetchCatalogs() {
+  if(privateAccess)return api<{categories:Category[];max:number}>('catalogs');
   if (!cloud) throw Error("Connect a Supabase project first.");
   const [categories, settings] = await Promise.all([
     cloud.from("html_resource_categories").select("*").order("display_order"),
@@ -112,6 +117,7 @@ async function fetchCatalogs() {
   };
 }
 async function fetchPublished() {
+  if(privateAccess){const all:Resource[]=[];for(let page=0;;page++){const rows=await api<Resource[]>('published',{page});all.push(...rows);if(rows.length<500)return all;}}
   if (!cloud) return [];
   const rows: Resource[] = [];
   for (let start = 0; ; start += 500) {
@@ -190,6 +196,7 @@ export async function link(resource: Resource, preview = false) {
     id: resource.id,
     preview,
   });
+  if(privateAccess){const parsed=new URL(url,location.origin);if(parsed.origin!==location.origin||!/^\/api\/files\/[a-f0-9-]{36}$/.test(parsed.pathname))throw Error('Unexpected file endpoint.');return parsed.href;}
   const parsed = new URL(url);
   const project = new URL(config!.url);
   if (
@@ -203,7 +210,7 @@ export async function link(resource: Resource, preview = false) {
   return parsed.href;
 }
 export async function download(resource: Resource) {
-  const response = await fetch(await link(resource), {cache:'no-store',credentials:'omit',signal:AbortSignal.timeout(120000)});
+  const response = await fetch(await link(resource), {cache:'no-store',credentials:'same-origin',signal:AbortSignal.timeout(120000)});
   if(!response.ok) throw Error('Download failed or the link expired. Retry for a fresh authorized link.');
   const bytes = await response.blob();
   if(bytes.size!==resource.file_size) throw Error('The downloaded file is incomplete. Retry the download.');
@@ -227,12 +234,13 @@ export function uploadJob(
   max: number,
   progress: (phase: string, percent: number) => void,
 ) {
+  let privateTransfer:XMLHttpRequest|undefined;
   let transfer: Upload | undefined,
     cancelled = false,
     reservation: string | undefined = job.uploadId;
   let rejectTransfer: ((reason: Error) => void) | undefined;
   const done = (async () => {
-    if (!cloud || !config) throw Error("Connect Supabase first.");
+    if ((!cloud || !config)&&!privateAccess) throw Error("Connect Supabase first.");
     progress("Checking file", 0);
     const info = fileInfo(job.file.name, job.file.size, job.file.type, max);
     const bytes = new Uint8Array(await job.file.arrayBuffer());
@@ -260,7 +268,10 @@ export function uploadJob(
       throw Error("Upload cancelled.");
     }
     if (reserved.state !== "ready" && !reserved.object_exists) {
-      const origin = new URL(config.url);
+      if(privateAccess){
+        await new Promise<void>((resolve,reject)=>{const xhr=privateTransfer=new XMLHttpRequest(),endpoint='/api/uploads/'+reserved.id;xhr.open('POST',endpoint);for(const [key,value]of Object.entries(uploadHeaders()))xhr.setRequestHeader(key,value);xhr.upload.onprogress=e=>{if(e.lengthComputable)progress('Uploading',Math.round(e.loaded/e.total*100));};xhr.onerror=()=>reject(Error('Upload interrupted. Retry after checking your connection.'));xhr.onabort=()=>reject(Error('Upload cancelled.'));xhr.timeout=120000;xhr.ontimeout=()=>reject(Error('Upload timed out. Retry to verify the stored object.'));xhr.onload=()=>{if(xhr.responseURL!==new URL(endpoint,location.origin).href){window.dispatchEvent(new Event('htmllab-access-check'));reject(Error('Sign in again before retrying the upload.'));return;}void protectedJson(new Response(xhr.responseText,{status:xhr.status,headers:{'Content-Type':xhr.getResponseHeader('content-type')||''}}),()=>window.dispatchEvent(new Event('htmllab-access-check'))).then(()=>resolve(),reject);};xhr.send(job.file);});
+      }else{
+      const origin = new URL(config!.url);
       if (origin.hostname.endsWith(".supabase.co"))
         origin.hostname = origin.hostname.replace(
           ".supabase.co",
@@ -311,6 +322,7 @@ export function uploadJob(
           })
           .catch(reject);
       });
+      }
     }
     if (cancelled) throw Error("Upload cancelled.");
     progress("Verifying and saving", 100);
@@ -321,6 +333,7 @@ export function uploadJob(
     done,
     cancel: async () => {
       cancelled = true;
+      privateTransfer?.abort();
       await transfer?.abort();
       rejectTransfer?.(Error("Upload cancelled."));
       if (reservation) await api("cancel", { upload_id: reservation });

@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState, lazy, Suspense } from "react";
+import {privateAccess} from './access/session';
+import {AccountBar} from './access/PrivateGate';
 import {
   ArrowUpRight,
   ArrowRight,
@@ -78,6 +80,7 @@ const Academy = lazy(() => import("./components/Academy"));
 const Advanced = lazy(() => import("./components/Advanced"));
 const CloudLibrary = lazy(() => import('./cloudResources/Library'));
 const CloudManager = lazy(() => import('./cloudResources/TeacherResources'));
+const StudentManagement = lazy(()=>import('./access/StudentManagement'));
 type Lesson = (typeof lessons)[number];
 type Progress = {
   completed: string[];
@@ -154,7 +157,7 @@ export default function App() {
     bugs: "Bug Hunter",
     advanced: "Advanced HTML",
     resources: 'Study Materials',
-    teacher: 'Manage Study Materials',
+    teacher: id==='students'?'Student Management':'Manage Study Materials',
   };
   const lesson = lessons.find((l) => l.id === id) || lessons[0];
   useEffect(() => {
@@ -461,6 +464,7 @@ export default function App() {
           tabIndex={-1}
           ref={main}
         >
+          {privateAccess&&<AccountBar/>}
           {storageError && (
             <p role="status" className="notice">
               Browser storage is unavailable or full. You can keep learning, but
@@ -485,7 +489,7 @@ export default function App() {
               </button>
             </div>
           )}
-          {page === 'resources' || (page==='teacher' && id==='resources') ? <Suspense fallback={<p role="status">Opening study materials…</p>}>{page==='resources'?<CloudLibrary/>:<CloudManager/>}</Suspense> : page === "advanced" ? (
+          {page==='teacher'&&id==='students'?<Suspense fallback={<p role="status">Opening Student Management…</p>}>{privateAccess?<StudentManagement/>:<section className="resource-page"><h1>Student Management</h1><p>Student enrollment is managed in the private classroom.</p><a className="button primary" href="https://html-lab-private.pages.dev/#teacher/students">Open private classroom</a></section>}</Suspense>:page === 'resources' || (page==='teacher' && id==='resources') ? <Suspense fallback={<p role="status">Opening study materials…</p>}>{page==='resources'?<CloudLibrary/>:<CloudManager/>}</Suspense> : page === "advanced" ? (
             <Suspense
               fallback={<p role="status">Opening advanced workshop…</p>}
             >

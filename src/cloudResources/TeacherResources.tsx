@@ -6,6 +6,8 @@ import {
   type FormEvent,
 } from "react";
 import { UploadCloud, ShieldCheck, FolderOpen } from "lucide-react";
+import {privateAccess} from '../access/session';
+import {useMember} from '../access/PrivateGate';
 import { accept, MiB } from "../../supabase/functions/_shared/validation.mjs";
 import {
   api,
@@ -34,7 +36,9 @@ type QueueItem = UploadJob & {
   error: string;
   completed: boolean;
 };
-export default function TeacherResources() {
+export default function TeacherResources(){return privateAccess?<PrivateResources/>:<PublicTeacherResources/>;}
+function PrivateResources(){const member=useMember();return member?.role==='admin'?<section className="resource-page"><h1>Manage Study Materials</h1><Dashboard profile={{id:member.id,email:member.email,role:'admin'}}/></section>:<p role="alert">Only an approved HTML teacher can manage study materials.</p>;}
+function PublicTeacherResources() {
   const [profile, setProfile] = useState<Profile | null>(null),
     [checking, setChecking] = useState(!!cloud),
     [error, setError] = useState(""),

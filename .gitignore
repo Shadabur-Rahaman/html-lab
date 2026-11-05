@@ -1,7 +1,11 @@
 node_modules/
 dist/
+dist-private/
+.wrangler/
+tests/private-access-browser.bundle.*
 *.tsbuildinfo
 .deployment/
 .env*
 !.env.example
+!.env.private.example
 supabase/.temp/

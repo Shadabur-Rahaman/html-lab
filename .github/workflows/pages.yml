@@ -31,6 +31,7 @@ jobs:
         run: |
           psql -h localhost -U postgres -d html_resource_test -v ON_ERROR_STOP=1 -f supabase/tests/bootstrap.sql
           psql -h localhost -U postgres -d html_resource_test -v ON_ERROR_STOP=1 -f supabase/tests/permissions.sql
+          psql -h localhost -U postgres -d html_resource_test -v ON_ERROR_STOP=1 -f supabase/tests/private-access.sql
   build:
     runs-on: ubuntu-latest
     steps:
@@ -46,6 +47,7 @@ jobs:
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
       - uses: actions/configure-pages@v5
+      - run: npm run build:private
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

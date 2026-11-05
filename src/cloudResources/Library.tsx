@@ -4,7 +4,7 @@ import { chapters, lessons } from "../data/curriculum.mjs";
 import { curriculum, scopes } from "./associations.mjs";
 import {
   catalogs,
-  cloud,
+  resourcesAvailable,
   extension,
   published,
   clearResourceCache,
@@ -28,7 +28,7 @@ export default function Library({ chapter, lesson, compact = false }: { chapter?
     [sort, setSort] = useState("order"),
     [page, setPage] = useState(0);
   const load = useCallback(async (refresh=false) => {
-    if (!cloud) return;
+    if (!resourcesAvailable) return;
     if(refresh)clearResourceCache();
     setLoading(true);
     setError("");
@@ -81,7 +81,7 @@ export default function Library({ chapter, lesson, compact = false }: { chapter?
             : a.display_order - b.display_order ||
               b.created_at.localeCompare(a.created_at),
     );
-  if(compact && (!cloud || (!loading && !error && !filtered.length))) return null;
+  if(compact && (!resourcesAvailable || (!loading && !error && !filtered.length))) return null;
   return (
     <section
       className="resource-page"
@@ -98,7 +98,7 @@ export default function Library({ chapter, lesson, compact = false }: { chapter?
             : "Everything you need for your HTML learning journey."}
         </p>
       </div>
-      {!cloud ? (
+      {!resourcesAvailable ? (
         <div className="resource-empty">
           <BookOpen size={32} />
           <h2>Study materials aren’t available yet.</h2>

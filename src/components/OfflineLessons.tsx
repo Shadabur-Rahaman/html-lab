@@ -1,7 +1,9 @@
 import { useState } from "react";
+import {privateAccess} from '../access/session';
 export default function OfflineLessons() {
   const [busy, setBusy] = useState(false),
     [notice, setNotice] = useState("");
+  if(privateAccess)return <section className="note-card"><h3>Private classroom access</h3><p>Lessons require a current online enrollment check. Exported work and downloaded copies remain on your device.</p></section>;
   async function install() {
     if (!("serviceWorker" in navigator)) {
       setNotice(

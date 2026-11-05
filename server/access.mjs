@@ -1,0 +1,91 @@
+import { createRemoteJWKSet, jwtVerify } from 'jose';
+
+const keys = new Map();
+export class AccessError extends Error {
+  constructor(code, status = 403, reason) { super(code); this.code = code; this.status = status; this.reason = reason; }
+}
+export function fetchMetadata(request) {
+  // Access's OTP form lives on the team domain. Its successful return is a
+  // cross-site, top-level GET navigation, just like opening a link from email.
+  // This is not a grant: JWT, enrollment and resource checks still follow.
+  if (request.headers.get('sec-fetch-site') === 'cross-site' && !(
+    request.method === 'GET' && request.headers.get('sec-fetch-mode') === 'navigate' &&
+    request.headers.get('sec-fetch-dest') === 'document'
+  )) throw new AccessError('origin_denied');
+}
+export function configuration(env, request) {
+  let issuer, project;
+  try { issuer = new URL(env.ACCESS_TEAM_DOMAIN); project = new URL(env.SUPABASE_URL); } catch { throw new AccessError('setup_required',503); }
+  if (issuer.protocol!=='https:' || !issuer.hostname.endsWith('.cloudflareaccess.com') || issuer.pathname!=='/' || issuer.search || issuer.username || issuer.password || project.protocol!=='https:' || !project.hostname.endsWith('.supabase.co') || project.pathname!=='/' || project.search || project.username || project.password || !env.SUPABASE_SERVICE_ROLE_KEY || !env.ACCESS_AUD)
+    throw new AccessError('setup_required',503);
+  const host = new URL(request.url).host;
+  const hosts=(env.PROTECTED_HOSTS||'').split(',').map(s=>s.trim());
+  if (!hosts.some(allowed=>allowed===host||(allowed==='*.html-lab-private.pages.dev'&&/^[a-z0-9-]+\.html-lab-private\.pages\.dev$/.test(host)))) throw new AccessError('hostname_denied');
+  return {issuer:issuer.origin,audience:env.ACCESS_AUD.split(',').map(s=>s.trim()).filter(Boolean)};
+}
+export async function verifyIdentity(request, config, keySet) {
+  const token = request.headers.get('Cf-Access-Jwt-Assertion');
+  if (!token || token.length>16384) throw new AccessError('unauthenticated',401,'assertion_missing_or_oversized');
+  try {
+    if (!keySet) {
+      if (!keys.has(config.issuer)) keys.set(config.issuer,createRemoteJWKSet(new URL(config.issuer+'/cdn-cgi/access/certs'),{timeoutDuration:5000}));
+      keySet=keys.get(config.issuer);
+    }
+    const {payload}=await jwtVerify(token,keySet,{issuer:config.issuer,audience:config.audience,algorithms:['RS256'],requiredClaims:['exp','iat','sub','email'],clockTolerance:0});
+    if (typeof payload.email!=='string' || typeof payload.sub!=='string' || !payload.sub || payload.sub.length>255 || payload.email.length>254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email) || typeof payload.iat!=='number' || !Number.isFinite(payload.iat) || payload.iat>Date.now()/1000+30) throw Error();
+    return {email:payload.email.toLowerCase(),subject:payload.sub,issuedAt:payload.iat};
+  } catch (error) {
+    if (['ERR_JWKS_TIMEOUT','ERR_JWKS_INVALID','ERR_JWKS_MULTIPLE_MATCHING_KEYS'].includes(error.code) || error instanceof TypeError)
+      throw new AccessError('authentication_unavailable',503,'key_service_unavailable');
+    const reason = error.code === 'ERR_JWT_CLAIM_VALIDATION_FAILED' && ['iss','aud','nbf','iat'].includes(error.claim)
+      ? 'invalid_'+error.claim
+      : error.code === 'ERR_JWT_EXPIRED' ? 'token_expired' : 'token_invalid';
+    throw new AccessError('unauthenticated',401,reason);
+  }
+}
+export function csrf(request) {
+  if (request.headers.get('origin')!==new URL(request.url).origin || request.headers.get('sec-fetch-site')==='cross-site') throw new AccessError('origin_denied');
+  const cookie=request.headers.get('cookie')?.match(/(?:^|;\s*)__Host-htmllab-csrf=([a-f0-9]{64})(?:;|$)/)?.[1];
+  if (!cookie || request.headers.get('x-htmllab-csrf')!==cookie) throw new AccessError('csrf_denied');
+}
+export async function jsonBody(request, max=32768) {
+  const reader=request.body?.getReader(); let size=0; const parts=[];
+  if (reader) for(;;) { const {done,value}=await reader.read(); if(done)break; size+=value.length; if(size>max){await reader.cancel();throw new AccessError('request_too_large',413)} parts.push(value); }
+  const bytes=new Uint8Array(size);let at=0;for(const p of parts){bytes.set(p,at);at+=p.length;}
+  try {const body=JSON.parse(new TextDecoder().decode(bytes));if(!body||Array.isArray(body)||typeof body!=='object')throw Error(); return body;} catch {throw new AccessError('invalid_request',400)}
+}
+export function secured(response) {
+  const headers=new Headers(response.headers);
+  for(const name of ['Access-Control-Allow-Origin','Access-Control-Allow-Headers','Access-Control-Allow-Methods','ETag','Last-Modified'])headers.delete(name);
+  headers.set('Cache-Control','private, no-store, max-age=0');
+  headers.set('CDN-Cache-Control','no-store');
+  headers.set('Cloudflare-CDN-Cache-Control','no-store');
+  headers.set('X-Content-Type-Options','nosniff');
+  headers.set('Referrer-Policy','no-referrer');
+  headers.set('X-Frame-Options','DENY');
+  headers.set('Permissions-Policy','camera=(), microphone=(), geolocation=()');
+  headers.set('Strict-Transport-Security','max-age=31536000');
+  headers.set('Content-Security-Policy',"default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' https: data: blob:; connect-src 'self' https:; frame-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'");
+  return new Response(response.body,{status:response.status,headers});
+}
+export function denial(error,request) {
+  const code=error instanceof AccessError?error.code:'service_unavailable';
+  const status=error instanceof AccessError?error.status:503;
+  if(new URL(request.url).pathname.startsWith('/api/')) return Response.json({error:'Access is unavailable.',code},{status});
+  const loggedOut = code==='unauthenticated' && new URL(request.url).searchParams.get('__cf_access_message')==='logged_out';
+  const titles={expired:'Access Expired',revoked:'Access Revoked',suspended:'Access Suspended',pending:'Awaiting Approval',rejected:'Enrollment Rejected',unapproved:'Not Enrolled in HTML LAB',identity_mismatch:'Identity Verification Required',setup_required:'Classroom Setup Required',hostname_denied:'Deployment Access Unavailable',not_started:'Enrollment Has Not Started',unauthenticated:'Sign-in Required',service_unavailable:'Access Temporarily Unavailable',authentication_unavailable:'Access Temporarily Unavailable'};
+  const title=loggedOut?'Signed Out':titles[code]||'Access Required';
+  const description=loggedOut?'You have signed out. Sign in again to open your lessons.':code==='unauthenticated'?'Sign in with your approved email to open your lessons.':code==='setup_required'?'The teacher is finishing private classroom setup. Lessons remain unavailable until access protection is configured.':'Contact your teacher to check your enrollment. If the service is temporarily unavailable, please try again later.';
+  const primary=code==='unauthenticated'?'Sign in':'Try again';
+  const exit=code==='unauthenticated'?'':' <a style="color:#f28b59;margin-left:24px" href="/cdn-cgi/access/logout">Sign out</a>';
+  return new Response(`<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title} · HTML LAB</title><body style="background:#101217;color:#dddfe5;font:18px system-ui;padding:8vw"><main><p style="color:#f28b59;letter-spacing:.1em">HTML LAB</p><h1>${title}</h1><p>${description}</p><a style="color:#f28b59" href="/">${primary}</a>${exit}</main></body></html>`,{status,headers:{'Content-Type':'text/html; charset=utf-8'}});
+}
+export function denialDiagnostic(error,request) {
+  const code=error instanceof AccessError&&/^[a-z_]{1,48}$/.test(error.code)?error.code:'service_unavailable';
+  const path=new URL(request.url).pathname;
+  const area=path.startsWith('/api/files/')?'/api/files/*':path.startsWith('/api/uploads/')?'/api/uploads/*':path.startsWith('/api/')?'/api/*':path.startsWith('/assets/')?'/assets/*':path==='/'?'/':'/protected-content';
+  return {event:'htmllab_access_denied',code,reason:error instanceof AccessError?error.reason:undefined,area,
+    cross_site:request.headers.get('sec-fetch-site')==='cross-site',
+    document_navigation:request.headers.get('sec-fetch-mode')==='navigate'&&request.headers.get('sec-fetch-dest')==='document',
+    assertion_present:!!request.headers.get('Cf-Access-Jwt-Assertion')};
+}
