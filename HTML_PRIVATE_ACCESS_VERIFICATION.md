@@ -14,14 +14,20 @@ Deployed private artifact URLs at verification:
 | Destination | Observed unsigned behavior |
 | --- | --- |
 | `https://html-lab-private.pages.dev/` | Cloudflare Access redirect to the existing team's email PIN form |
-| `https://4f193627.html-lab-private.pages.dev/` | HTTP 401 from the server identity gate |
-| `https://c639234d.html-lab-private.pages.dev/` | HTTP 401 from the server identity gate |
-| `https://security-check.html-lab-private.pages.dev/` | HTTP 401 from the server identity gate |
+| `https://4f193627.html-lab-private.pages.dev/` | Cloudflare Access redirect to the same HTML PIN application |
+| `https://c639234d.html-lab-private.pages.dev/` | Cloudflare Access redirect to the same HTML PIN application |
+| `https://security-check.html-lab-private.pages.dev/` | Cloudflare Access redirect to the same HTML PIN application |
 
 **24 hosted unsigned-request checks passed** across these four destinations, covering documents, a real JavaScript asset path, session API, file API and PDF asset. Both production and preview project settings were re-read after deployment and retained `fail_open=false`. The actual production HTML AUD was read from its public Access redirect and verified to differ from JS LAB's AUD; it is installed in both environments' server bindings.
 
-**Not yet verified/completed:** the available deployment credential cannot create/review Access applications or policies (provider HTTP 403). The production PIN page is observable, but its exact saved allow-policy rules and a successful teacher OTP session have not been verified. Preview/hash destinations are application-gated, but Cloudflare Access preview redirection/policies still need dashboard setup/verification. A real student PIN test was explicitly deferred by the owner. A “code sent” notice would not prove delivery, and no successful login is claimed without the completed flow.
+**Dashboard configuration verified:** the existing HTML Access application (`cc70c32d-09ae-43c5-b3a7-21dd98162ffb`) now contains the production destination and `*.html-lab-private.pages.dev`. The wildcard was added using the supported custom public-hostname input, saved and reopened; no duplicate production application was created. Attached policies are HTML Lab — Teacher Only (`e1863db7-38fa-4b6a-80eb-579b4ebd65f1`) and HTML Lab — Approved Students (`d157970a-19e4-492e-9ab8-9a8468efcc9a`). Both have exact email rules, with no Everyone, Bypass or broad email-domain rule. The pre-existing student email rule was preserved; no HTML student enrollment was granted. One-time PIN is the sole selected provider; accepting all providers and WARP authentication are off. The application session is one hour and both policies inherit it. Production and previews share this HTML application's AUD, already installed in both server environments; no additional audience or deployment was necessary.
+
+**Real teacher sign-in verified:** the owner received/entered the teacher PIN in the Cloudflare form and the production classroom loaded with the Teacher role. Student Management loaded the live server data, showing zero students and actual verified identity/login audit events at 21:22 IST on 5 November 2026. The preview alias also loaded the classroom using that authenticated identity. This establishes successful Cloudflare authentication, real JWT validation, enrollment/admin authorization and protected asset loading for the teacher; it does not establish student PIN behavior.
+
+The production teacher resource screen also loaded the existing seven managed resources (three published, four drafts) through the private gateway. No resource status/content was changed during this browser check. Student Management and its real audit data loaded on the authenticated preview alias as well.
+
+**Remaining verification:** a real student PIN test was explicitly deferred by the owner. Pending/expired/suspended/revoked student enforcement was tested against the hosted backend and gateway as described above, not through real student Cloudflare sessions. Logout/re-login and expiration of a real browser session have not been verified end to end. A “code sent” notice alone is not proof of delivery. The deployment credential still cannot administer Access (provider HTTP 403); the configuration above was completed through the owner's authenticated dashboard.
 
 The existing public GitHub Pages site still exposes its public curriculum and published resources. The private deployment does not make those public copies private. Previously delivered/downloaded data cannot be recalled. No real HTML students were enrolled, JS students were not copied, JS records/settings were not modified, and unused empty enrollment tables in the alternate local-config project were left as the owner requested.
 
-See [HTML_PRIVATE_ACCESS_SETUP.md](./HTML_PRIVATE_ACCESS_SETUP.md) for the exact remaining production-policy review, preview Access setup, teacher sign-in and future student-approval procedures.
+See [HTML_PRIVATE_ACCESS_SETUP.md](./HTML_PRIVATE_ACCESS_SETUP.md) for the saved production/preview configuration and future student-approval procedures.

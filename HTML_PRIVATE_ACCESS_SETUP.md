@@ -6,7 +6,9 @@ The private application uses the existing HTML LAB codebase, a dedicated Cloudfl
 
 Implementation date: **5 November 2026**. The HTML-only enrollment schema, server gateway, teacher Student Management screen and separate private build are implemented. The Pages project is `html-lab-private`; both production and preview project settings use **fail closed**. The worker protects every document, asset and API request.
 
-**Access-policy review and preview Access setup still require an authorized dashboard session.** The available Wrangler deployment credential was explicitly rejected when creating an Access application (HTTP 403, code 1010). Deployment credentials do not imply Access administration rights. Live inspection subsequently found that the production hostname already has a separate Access application and an email PIN form. Its actual HTML audience was verified as different from JS LAB's and installed in the server bindings. No saved policy rules or successful PIN delivery are claimed from that form alone. Preview/hash endpoints remain protected by the server identity/enrollment gate, but they did not redirect to an Access application in the unsigned checks. Real student PIN testing was deferred at the owner's request; a real teacher PIN session still needs verification.
+**Production and preview Access protection are configured and verified.** An authorized dashboard session confirmed the existing HTML application and its two HTML-only exact-email policies. Its destinations are `html-lab-private.pages.dev` and `*.html-lab-private.pages.dev`, with One-time PIN as the sole login provider and a one-hour application session. All 24 unsigned document/asset/API checks now redirect to Cloudflare Access. The owner completed a real teacher PIN sign-in; the live application recognized the teacher, loaded Student Management and recorded verified identity/login events. The signed-in preview alias also loaded the classroom. Real student PIN testing remains deferred at the owner's request.
+
+Wrangler deployment credentials alone could not administer Access (HTTP 403, code 1010); the saved Access configuration was completed and reviewed through the authenticated dashboard instead. Deployment permission is not evidence of Access administration permission.
 
 The GitHub Pages copy remains public, including the same lessons and published classroom resources through the existing public resource API. Protecting the private domain does **not** make those copies private. Draft/unpublished resources remain restricted. Already downloaded files, exported projects, screenshots or previously delivered code cannot be erased remotely. Moving to private-only later requires explicit approval to retire the public deployment and public published-resource delivery; that change is not part of this release.
 
@@ -79,13 +81,13 @@ Use the same Zero Trust account/team as JS LAB, **without editing JS LAB applica
 
 Cloudflare's Pages-specific workflow matters: **Workers & Pages → html-lab-private → Settings → General → Enable access policy** initially protects **previews only**. It does not by itself protect `html-lab-private.pages.dev`. This project's production hostname already redirects to the existing team's PIN form; **preserve that existing application and do not add a duplicate production destination**.
 
-For the current project:
+The current saved configuration uses **one HTML Access application with two destinations**, so production and previews share the same HTML audience and exact-email policies:
 
 1. In Zero Trust Access applications, find the existing **`html-lab-private.pages.dev`** destination. Verify its AUD matches the observed production value `6e74faf7a9d459208cc5a96f6fc1f19b87beab9d96fd0229e400204265b94b46`. Name it **HTML LAB — Private Classroom** if needed, without replacing it or adding another production destination.
 2. Review its exact-email teacher/student policies and PIN provider as described below.
-3. In the Pages project's General settings, enable its access policy to generate preview protection if it is absent. If an HTML preview application already exists, inspect and reuse it instead. Name it **HTML LAB — Private Classroom Previews**.
-4. Verify the preview application's destination is **`*.html-lab-private.pages.dev`**, including deployment hashes and branch aliases. Use Pages' supported hostname controls rather than forcing a wildcard into a dropdown. A wildcard alone does not cover the production apex.
-5. Attach the HTML-only policies below to **both** applications. Review generated defaults; there must be no Everyone, Bypass, broad email-domain or service-token policy granting classroom access. Record the preview application's own AUD and add it to the server configuration.
+3. The existing application's **Destinations → Add public hostname → Switch to custom input** accepted `*.html-lab-private.pages.dev`. After saving and reopening, Cloudflare represented this as subdomain `*` under `html-lab-private.pages.dev`. The original production destination was retained exactly once.
+4. Verify both saved destinations and test actual deployment hashes and branch aliases. This release verified all three deployed hash/alias origins redirect to Access, then verified authenticated classroom rendering on the preview alias. A wildcard alone does not cover the production apex.
+5. Retain only the two HTML policies below. Both apply to both destinations automatically. There are no Everyone, Bypass, broad email-domain or service-token Allow policies attached. Do not enable another generated preview application over this already protected destination without reviewing overlap and updating audiences if necessary.
 
 For a different fresh project with no production application, follow the [Pages known-issues procedure](https://developers.cloudflare.com/pages/platform/known-issues/#enable-access-on-your-pagesdev-domain): generate preview protection, convert that generated destination from wildcard to production, then enable Pages access policy again for a separate preview app. That conversion is unnecessary for this project's already existing production app.
 
@@ -93,11 +95,11 @@ Configure a **1 hour** application session initially. Under Login methods, selec
 
 ## Teacher and student policies
 
-Create **HTML LAB — Teacher Only**, decision **Allow**, including the **exact existing approved HTML teacher email address(es)**. The same address must match the separately approved HTML administrator record. Do not use a classroom code, Everyone or an entire email domain.
+Reuse **HTML LAB — Teacher Only**, decision **Allow**, including the **exact existing approved HTML teacher email address(es)**. The saved rule was verified against the separately approved HTML administrator identity. Do not use a classroom code, Everyone or an entire email domain.
 
-Create **HTML LAB — Approved Students**, decision **Allow**, including exact teacher-approved **HTML** student email addresses. With no HTML students enrolled, keep access teacher-only; create/attach the student policy when the first actual student is approved. Do not invent a placeholder student, copy the JS policy or add all JS students.
+Reuse **HTML LAB — Approved Students**, decision **Allow**, including exact teacher-approved **HTML** student email addresses. The dashboard already contained one exact-email rule; it was preserved, not copied from JS or populated by this release. The live HTML enrollment dashboard has zero students, so that email rule alone cannot authorize classroom access. Do not invent a placeholder student, copy the JS policy or add all JS students.
 
-Verify the policies are attached to each HTML Access application, not merely saved as reusable policies. Reopen both apps after saving and check hostname, policy names, email spelling, PIN login method and session duration. Enrollment approval and Cloudflare policy approval are separate: both must permit the student.
+Verify the policies are attached to the HTML Access application, not merely saved as reusable policies. Reopen it after saving and check both hostnames, policy names, email spelling, PIN login method and session duration. Enrollment approval and Cloudflare policy approval are separate: both must permit the student.
 
 ## Set the real HTML audience and server bindings
 
@@ -117,7 +119,7 @@ The script places these values into encrypted Pages server bindings for **both p
 - `SUPABASE_URL`: verified shared backend URL.
 - `SUPABASE_SERVICE_ROLE_KEY`: obtained in process memory and sent over child stdin, never a command argument/file/browser variable.
 
-For preliminary deployment, the helper supports `--prepare-server-bindings` in place of the AUD. That configures the other server bindings but deliberately leaves `ACCESS_AUD` absent. **It cannot enable login.** This release has progressed beyond preparation: both environments now contain the actual observed HTML production AUD. Add the separate HTML preview AUD when its Access application is configured. Do not substitute the JS audience.
+For preliminary deployment, the helper supports `--prepare-server-bindings` in place of the AUD. That configures the other server bindings but deliberately leaves `ACCESS_AUD` absent. **It cannot enable login.** This release has progressed beyond preparation: both environments contain the actual HTML AUD, and the same saved HTML application protects production and previews. No second preview AUD is needed for this configuration. Do not substitute the JS audience.
 
 Redeploy production and preview after setting bindings so each deployment receives the new environment. Do not set privileged bindings in `VITE_` variables, GitHub public variables, `wrangler.jsonc`, browser code or committed `.env` files. No Cloudflare administrative token is required in the running app; policy synchronization remains manual.
 
@@ -139,7 +141,7 @@ Private file links point only to `/api/files/{HTML resource UUID}`. The gateway 
 2. Open **Student Management** in the private account bar (`#teacher/students`).
 3. Add the name/email. The record is **pending**; caller-supplied approval/role fields cannot activate it.
 4. Select 1, 3, 7, 14 or 30 days; enter a custom whole number of days; or choose exact local expiration/start times. The server stores UTC and validates future dates. Press **Approve**.
-5. Separately add the exact student email to the HTML Approved Students policy on production **and preview** applications. Verify the attachment and saved policy. No automatic synchronization is claimed.
+5. Separately add the exact student email to the attached HTML Approved Students policy. The current single application applies it to production **and preview** destinations. If separate applications are introduced later, attach it to each. Verify the saved rule. No automatic synchronization is claimed.
 6. **Extend** adds days from the later of current expiry/server now, or accepts an exact new end time. It preserves a suspension. **Resume** explicitly restores a suspended student only while their dates are valid; extend expired dates first.
 7. **Suspend**, **Reject** and **Revoke Access** use accessible confirmation dialogs. Successful messages appear only after server confirmation. Refresh stale records before retrying a conflict.
 8. Filter/search students and inspect the latest server-backed security/enrollment events. UI status and remaining days come from server results, not the student's computer clock. Dates display in the viewing browser's local timezone.
